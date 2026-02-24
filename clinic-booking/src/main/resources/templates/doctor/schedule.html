@@ -20,7 +20,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
                     <h5 class="mb-0 fw-semibold"><i class="bi bi-clock text-primary me-2"></i>Weekly Schedule</h5>
-                    <small class="text-muted">Set your regular working hours for each day</small>
+                    <small class="text-muted">Add one or more working time ranges per day</small>
                 </div>
                 <div class="card-body">
                     <!-- Add/update day -->
@@ -82,9 +82,9 @@
                                              th:text="${s.slotDurationMinutes + '-min slots'}"></div>
                                     </div>
                                 </div>
-                                <form th:action="@{/doctor/schedule/delete/{day}(day=${s.dayOfWeek})}" method="post">
+                                <form th:action="@{/doctor/schedule/delete/{scheduleId}(scheduleId=${s.id})}" method="post">
                                     <button type="submit" class="btn btn-outline-danger btn-sm"
-                                            onclick="return confirm('Remove this day from your schedule?')">
+                                            onclick="return confirm('Remove this schedule slot?')">
                                         <i class="bi bi-trash3"></i>
                                     </button>
                                 </form>

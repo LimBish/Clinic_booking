@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -76,8 +77,13 @@ public class DoctorService {
         if (!end.isAfter(start))
             throw new AppException("End time must be after start time.");
 
-        DoctorSchedule schedule = scheduleRepo.findByDoctorIdAndDayOfWeek(doctorId, day)
-                .orElse(new DoctorSchedule());
+        List<DoctorSchedule> daySchedules = scheduleRepo.findByDoctorIdAndDayOfWeek(doctorId, day);
+        boolean overlaps = daySchedules.stream().anyMatch(existing ->
+                start.isBefore(existing.getEndTime()) && end.isAfter(existing.getStartTime()));
+        if (overlaps)
+            throw new AppException("This time range overlaps with an existing schedule on " + day + ".");
+
+        DoctorSchedule schedule = new DoctorSchedule();
         schedule.setDoctor(doctor);
         schedule.setDayOfWeek(day);
         schedule.setStartTime(start);
@@ -88,9 +94,11 @@ public class DoctorService {
         notificationService.sendScheduleUpdated(doctor, day.toString());
     }
 
-    public void deleteSchedule(Long doctorId, DayOfWeek day) {
-        DoctorSchedule schedule = scheduleRepo.findByDoctorIdAndDayOfWeek(doctorId, day)
-                .orElseThrow(() -> new AppException("No schedule found for " + day));
+    public void deleteSchedule(Long doctorId, Long scheduleId) {
+        DoctorSchedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException("Schedule", scheduleId));
+        if (!schedule.getDoctor().getId().equals(doctorId))
+            throw new AppException("You can only remove your own schedule entries.");
         scheduleRepo.delete(schedule);
     }
 
@@ -146,5 +154,10 @@ public class DoctorService {
 
     public List<Doctor> getAllActive() { return doctorRepo.findByActiveTrue(); }
     public List<Doctor> getAll()       { return doctorRepo.findAll(); }
-    public List<DoctorSchedule> getSchedules(Long doctorId) { return scheduleRepo.findByDoctorId(doctorId); }
+    public List<DoctorSchedule> getSchedules(Long doctorId) {
+        return scheduleRepo.findByDoctorId(doctorId).stream()
+                .sorted(Comparator.comparing(DoctorSchedule::getDayOfWeek)
+                        .thenComparing(DoctorSchedule::getStartTime))
+                .toList();
+    }
 }

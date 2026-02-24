@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, Long> {
     List<DoctorSchedule> findByDoctorId(Long doctorId);
-    Optional<DoctorSchedule> findByDoctorIdAndDayOfWeek(Long doctorId, DayOfWeek dayOfWeek);
+    List<DoctorSchedule> findByDoctorIdAndDayOfWeek(Long doctorId, DayOfWeek dayOfWeek);
 }

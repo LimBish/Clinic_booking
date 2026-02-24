@@ -2,8 +2,8 @@ package com.clinic.controller;
 
 import com.clinic.dto.Dtos.*;
 import com.clinic.exception.AppException;
+import com.clinic.exception.NotFoundException;
 import com.clinic.model.Doctor;
-import com.clinic.model.enums.AppointmentStatus;
 import com.clinic.service.AppointmentService;
 import com.clinic.service.DoctorService;
 import com.clinic.service.UserService;
@@ -78,7 +78,7 @@ public class DoctorController {
     }
 
     @PostMapping("/schedule")
-    public String saveSchedule(@Valid @ModelAttribute ScheduleRequest req,
+    public String saveSchedule(@ModelAttribute ScheduleRequest req,
                                @AuthenticationPrincipal UserDetails user,
                                RedirectAttributes flash) {
         try {
@@ -91,15 +91,15 @@ public class DoctorController {
         return "redirect:/doctor/schedule";
     }
 
-    @PostMapping("/schedule/delete/{day}")
-    public String deleteSchedule(@PathVariable String day,
+    @PostMapping("/schedule/delete/{scheduleId}")
+    public String deleteSchedule(@PathVariable Long scheduleId,
                                  @AuthenticationPrincipal UserDetails user,
                                  RedirectAttributes flash) {
         try {
             Doctor doctor = doctorService.getDoctorByUserId(userService.findByEmail(user.getUsername()).getId());
-            doctorService.deleteSchedule(doctor.getId(), DayOfWeek.valueOf(day.toUpperCase()));
-            flash.addFlashAttribute("success", day + " removed from your schedule.");
-        } catch (AppException e) {
+            doctorService.deleteSchedule(doctor.getId(), scheduleId);
+            flash.addFlashAttribute("success", "Schedule entry removed.");
+        } catch (AppException | NotFoundException e) {
             flash.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/doctor/schedule";
@@ -113,13 +113,8 @@ public class DoctorController {
                            RedirectAttributes flash) {
         try {
             Doctor doctor = doctorService.getDoctorByUserId(userService.findByEmail(user.getUsername()).getId());
-//            int affectedCount = appointmentService
-//                    .getDoctorWeekAppointments(user.getUsername(), req.getLeaveDate()).size();
-
-            int affectedCount = (int) appointmentService
-                    .getDoctorAppointmentsForDate(user.getUsername(), req.getLeaveDate()).stream()
-                    .filter(appt -> appt.getStatus() == AppointmentStatus.CONFIRMED)
-                    .count();
+            int affectedCount = appointmentService
+                    .getDoctorWeekAppointments(user.getUsername(), req.getLeaveDate()).size();
             doctorService.addLeave(doctor.getId(), req);
             flash.addFlashAttribute("success",
                     "Leave marked for " + req.getLeaveDate() + ". " +

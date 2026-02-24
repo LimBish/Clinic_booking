@@ -47,12 +47,16 @@ public class AppointmentService {
             throw new AppException("Appointment date cannot be in the past.");
 
         // Check doctor has a weekly schedule for that day
-        DoctorSchedule schedule = scheduleRepo
-                .findByDoctorIdAndDayOfWeek(doctor.getId(), req.getAppointmentDate().getDayOfWeek())
-                .orElseThrow(() -> new AppException(
-                    "Dr. " + doctor.getUser().getFullName() + " is not available on "
+//        DoctorSchedule schedule = scheduleRepo
+//                .findByDoctorIdAndDayOfWeek(doctor.getId(), req.getAppointmentDate().getDayOfWeek())
+//                .orElseThrow(() -> new AppException(
+//                    "Dr. " + doctor.getUser().getFullName() + " is not available on "
+        List<DoctorSchedule> schedules = scheduleRepo
+                .findByDoctorIdAndDayOfWeek(doctor.getId(), req.getAppointmentDate().getDayOfWeek());
+        if (schedules.isEmpty())
+            throw new AppException(
                     + req.getAppointmentDate().getDayOfWeek().toString().charAt(0)
-                    + req.getAppointmentDate().getDayOfWeek().toString().substring(1).toLowerCase() + "s."));
+                    + req.getAppointmentDate().getDayOfWeek().toString().substring(1).toLowerCase() + "s.");
 
         // Check doctor has not marked that specific date as leave
         if (leaveRepo.existsByDoctorIdAndLeaveDate(doctor.getId(), req.getAppointmentDate()))
@@ -61,14 +65,29 @@ public class AppointmentService {
 
         LocalTime time = LocalTime.parse(req.getAppointmentTime());
 
-        // Validate time is within schedule and aligns with slot duration
-        LocalTime slotEnd = time.plusMinutes(schedule.getSlotDurationMinutes());
-        if (time.isBefore(schedule.getStartTime()) || !slotEnd.isAfter(time) || slotEnd.isAfter(schedule.getEndTime()))
-            throw new AppException("Selected time is outside of the doctor's working hours.");
+//        // Validate time is within schedule and aligns with slot duration
+//        LocalTime slotEnd = time.plusMinutes(schedule.getSlotDurationMinutes());
+//        if (time.isBefore(schedule.getStartTime()) || !slotEnd.isAfter(time) || slotEnd.isAfter(schedule.getEndTime()))
+//            throw new AppException("Selected time is outside of the doctor's working hours.");
 
-        long minutesFromStart = java.time.Duration.between(schedule.getStartTime(), time).toMinutes();
-        if (minutesFromStart % schedule.getSlotDurationMinutes() != 0)
-            throw new AppException("Selected time does not align with the doctor's slot schedule.");
+        // Validate time falls in at least one schedule window and aligns with that slot duration
+        DoctorSchedule matchingSchedule = schedules.stream()
+                .filter(schedule -> {
+                    LocalTime slotEnd = time.plusMinutes(schedule.getSlotDurationMinutes());
+                    if (time.isBefore(schedule.getStartTime()) || !slotEnd.isAfter(time) || slotEnd.isAfter(schedule.getEndTime()))
+                        return false;
+                    long minutesFromStart = java.time.Duration.between(schedule.getStartTime(), time).toMinutes();
+                    return minutesFromStart % schedule.getSlotDurationMinutes() == 0;
+                })
+                .findFirst()
+                .orElse(null);
+
+//        long minutesFromStart = java.time.Duration.between(schedule.getStartTime(), time).toMinutes();
+//        if (minutesFromStart % schedule.getSlotDurationMinutes() != 0)
+//            throw new AppException("Selected time does not align with the doctor's slot schedule.");
+
+        if (matchingSchedule == null)
+            throw new AppException("Selected time is outside of the doctor's working hours or does not match slot intervals.");
 
 
         if (isSlotTaken(doctor.getId(), req.getAppointmentDate(), time))
@@ -97,21 +116,22 @@ public class AppointmentService {
         // Doctor on leave that day?
         if (leaveRepo.existsByDoctorIdAndLeaveDate(doctorId, date)) return List.of();
 
-        DoctorSchedule schedule = scheduleRepo
-                .findByDoctorIdAndDayOfWeek(doctorId, date.getDayOfWeek())
-                .orElse(null);
-        if (schedule == null) return List.of();
+        List<DoctorSchedule> schedules = scheduleRepo
+                .findByDoctorIdAndDayOfWeek(doctorId, date.getDayOfWeek());
+        if (schedules.isEmpty()) return List.of();
 
         List<String> slots = new ArrayList<>();
-        LocalTime current = schedule.getStartTime();
         LocalTime now = LocalTime.now();
 
-        while (current.isBefore(schedule.getEndTime())) {
-            // Skip past slots for today
-            boolean isPast = date.equals(LocalDate.now()) && current.isBefore(now);
-            if (!isPast && !isSlotTaken(doctorId, date, current))
-                slots.add(current.toString());
-            current = current.plusMinutes(schedule.getSlotDurationMinutes());
+        for (DoctorSchedule schedule : schedules) {
+            LocalTime current = schedule.getStartTime();
+            while (current.isBefore(schedule.getEndTime())) {
+                // Skip past slots for today
+                boolean isPast = date.equals(LocalDate.now()) && current.isBefore(now);
+                if (!isPast && !isSlotTaken(doctorId, date, current))
+                    slots.add(current.toString());
+                current = current.plusMinutes(schedule.getSlotDurationMinutes());
+            }
         }
         return slots;
     }
