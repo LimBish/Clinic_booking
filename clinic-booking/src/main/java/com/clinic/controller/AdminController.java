@@ -99,7 +99,7 @@ public class AdminController {
     }
 
     @PostMapping("/doctors/{id}/schedule")
-    public String setSchedule(@PathVariable Long id, @ModelAttribute ScheduleRequest req,
+    public String setSchedule(@PathVariable Long id, @Valid @ModelAttribute ScheduleRequest req,
                               Model model) {
         try {
             doctorService.setSchedule(id, req);

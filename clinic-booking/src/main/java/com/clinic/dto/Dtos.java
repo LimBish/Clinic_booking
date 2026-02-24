@@ -62,6 +62,8 @@ public class Dtos {
         @NotBlank String dayOfWeek;
         @NotBlank String startTime;
         @NotBlank String endTime;
+        @NotNull
+        @Positive
         Integer slotDurationMinutes = 30;
     }
 

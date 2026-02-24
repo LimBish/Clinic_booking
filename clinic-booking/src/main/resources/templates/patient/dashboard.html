@@ -52,10 +52,10 @@
                     </thead>
                     <tbody>
                     <tr th:each="appt : ${upcoming}">
-                        <td class="fw-semibold" th:text="${appt.doctor.user.fullName}"></td>
-                        <td><span class="badge bg-light text-dark" th:text="${appt.doctor.specialization}"></span></td>
-                        <td th:text="${appt.appointmentDate}"></td>
-                        <td th:text="${appt.appointmentTime}"></td>
+                        <td class="fw-semibold"
+                            th:text="${appt.doctor != null && appt.doctor.user != null ? appt.doctor.user.fullName : 'Doctor unavailable'}"></td>
+                        <td><span class="badge bg-light text-dark"
+                                  th:text="${appt.doctor != null && appt.doctor.specialization != null ? appt.doctor.specialization : 'N/A'}"></span></td>
                         <td>
                             <span class="badge"
                                   th:classappend="${appt.status.name() == 'CONFIRMED'} ? 'bg-success' :
@@ -63,10 +63,13 @@
                                   th:text="${appt.status}"></span>
                         </td>
                         <td>
-                            <form th:action="@{/patient/appointments/{id}/cancel(id=${appt.id})}" method="post"
+                            <form th:if="${appt.status.name() == 'PENDING' || appt.status.name() == 'CONFIRMED'}"
+                                  th:action="@{/patient/appointments/{id}/cancel(id=${appt.id})}" method="post"
                                   onsubmit="return confirm('Cancel this appointment?')">
                                 <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
                             </form>
+                            <span th:unless="${appt.status.name() == 'PENDING' || appt.status.name() == 'CONFIRMED'}"
+                                  class="text-muted small">No actions</span>
                         </td>
                     </tr>
                     </tbody>

@@ -3,6 +3,7 @@ package com.clinic.controller;
 import com.clinic.dto.Dtos.*;
 import com.clinic.exception.AppException;
 import com.clinic.model.Doctor;
+import com.clinic.model.enums.AppointmentStatus;
 import com.clinic.service.AppointmentService;
 import com.clinic.service.DoctorService;
 import com.clinic.service.UserService;
@@ -77,7 +78,7 @@ public class DoctorController {
     }
 
     @PostMapping("/schedule")
-    public String saveSchedule(@ModelAttribute ScheduleRequest req,
+    public String saveSchedule(@Valid @ModelAttribute ScheduleRequest req,
                                @AuthenticationPrincipal UserDetails user,
                                RedirectAttributes flash) {
         try {
@@ -112,8 +113,13 @@ public class DoctorController {
                            RedirectAttributes flash) {
         try {
             Doctor doctor = doctorService.getDoctorByUserId(userService.findByEmail(user.getUsername()).getId());
-            int affectedCount = appointmentService
-                    .getDoctorWeekAppointments(user.getUsername(), req.getLeaveDate()).size();
+//            int affectedCount = appointmentService
+//                    .getDoctorWeekAppointments(user.getUsername(), req.getLeaveDate()).size();
+
+            int affectedCount = (int) appointmentService
+                    .getDoctorAppointmentsForDate(user.getUsername(), req.getLeaveDate()).stream()
+                    .filter(appt -> appt.getStatus() == AppointmentStatus.CONFIRMED)
+                    .count();
             doctorService.addLeave(doctor.getId(), req);
             flash.addFlashAttribute("success",
                     "Leave marked for " + req.getLeaveDate() + ". " +

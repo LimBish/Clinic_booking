@@ -31,7 +31,7 @@
                             <p class="mb-0 text-success fw-semibold"
                                th:text="${doctor.consultationFee != null ? '$' + doctor.consultationFee : '—'}"></p>
                         </div>
-                        <div class="col-12" th:if="${doctor?.bio != null}">
+                        <div class="col-12" th:if="${doctor != null and doctor.bio != null}">
                             <label class="form-label fw-semibold small text-muted">BIO</label>
                             <p class="mb-0 text-muted" th:text="${doctor.bio}"></p>
                         </div>

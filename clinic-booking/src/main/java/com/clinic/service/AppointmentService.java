@@ -61,10 +61,15 @@ public class AppointmentService {
 
         LocalTime time = LocalTime.parse(req.getAppointmentTime());
 
-        // Validate time is within schedule
-        if (time.isBefore(schedule.getStartTime()) || !time.plusMinutes(schedule.getSlotDurationMinutes()).isAfter(time)
-                || time.isBefore(schedule.getStartTime()) || time.compareTo(schedule.getEndTime()) >= 0)
+        // Validate time is within schedule and aligns with slot duration
+        LocalTime slotEnd = time.plusMinutes(schedule.getSlotDurationMinutes());
+        if (time.isBefore(schedule.getStartTime()) || !slotEnd.isAfter(time) || slotEnd.isAfter(schedule.getEndTime()))
             throw new AppException("Selected time is outside of the doctor's working hours.");
+
+        long minutesFromStart = java.time.Duration.between(schedule.getStartTime(), time).toMinutes();
+        if (minutesFromStart % schedule.getSlotDurationMinutes() != 0)
+            throw new AppException("Selected time does not align with the doctor's slot schedule.");
+
 
         if (isSlotTaken(doctor.getId(), req.getAppointmentDate(), time))
             throw new AppException("This time slot is already booked. Please choose another.");
@@ -166,6 +171,12 @@ public class AppointmentService {
         Doctor doctor = getDoctorByEmail(email);
         return appointmentRepo.findByDoctorIdAndAppointmentDateOrderByAppointmentTime(
                 doctor.getId(), LocalDate.now());
+    }
+
+    /** Doctor: appointments for a specific date */
+    public List<Appointment> getDoctorAppointmentsForDate(String email, LocalDate date) {
+        Doctor doctor = getDoctorByEmail(email);
+        return appointmentRepo.findByDoctorIdAndAppointmentDateOrderByAppointmentTime(doctor.getId(), date);
     }
 
     /** Doctor: appointments for the current week (Mon–Sun) */
