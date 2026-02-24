@@ -53,9 +53,11 @@
                     <tbody>
                     <tr th:each="appt : ${upcoming}">
                         <td class="fw-semibold"
-                            th:text="${appt.doctor != null && appt.doctor.user != null ? appt.doctor.user.fullName : 'Doctor unavailable'}"></td>
+                            th:text="${appt.doctor != null && appt.doctor.user != null ? 'Dr. ' + appt.doctor.user.fullName : 'Doctor unavailable'}"></td>
                         <td><span class="badge bg-light text-dark"
                                   th:text="${appt.doctor != null && appt.doctor.specialization != null ? appt.doctor.specialization : 'N/A'}"></span></td>
+                        <td th:text="${appt.appointmentDate != null ? appt.appointmentDate : 'N/A'}"></td>
+                        <td th:text="${appt.appointmentTime != null ? appt.appointmentTime.format(T(java.time.format.DateTimeFormatter).ofPattern('h:mm a')) : 'N/A'}"></td>
                         <td>
                             <span class="badge"
                                   th:classappend="${appt.status.name() == 'CONFIRMED'} ? 'bg-success' :

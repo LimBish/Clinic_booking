@@ -11,6 +11,17 @@
         // Day-of-week index: 0=Sun,1=Mon,...6=Sat → doctor working days are like "MONDAY"
         const DOW_MAP = { SUNDAY:0, MONDAY:1, TUESDAY:2, WEDNESDAY:3, THURSDAY:4, FRIDAY:5, SATURDAY:6 };
 
+        function formatTime12Hour(timeStr) {
+                    if (!timeStr) return '';
+                    const [hRaw, mRaw] = String(timeStr).split(':');
+                    const h = Number(hRaw);
+                    const m = Number(mRaw ?? 0);
+                    if (Number.isNaN(h) || Number.isNaN(m)) return timeStr;
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    const hour12 = h % 12 || 12;
+                    return `${hour12}:${String(m).padStart(2, '0')} ${ampm}`;
+                }
+
         function DoctorCard({ doc, selected, onSelect }) {
             return (
                 <div
@@ -29,7 +40,7 @@
                         </div>
 
                         <div className="flex-grow-1 min-width-0">
-                            <div className="fw-semibold">{doc.user?.fullName}</div>
+                            <div className="fw-semibold">Dr. {doc.user?.fullName}</div>
                             <div className="small text-muted">{doc.specialization}</div>
 
                             {doc.consultationFee > 0 && (
@@ -183,11 +194,11 @@
                                 {slots.map(slot => (
                                     <button
                                         type="button"
-                                        key={slot}
+                                        key={formatTime12Hour(slot)}
                                         className={`btn btn-sm ${selectedSlot === slot ? 'btn-primary' : 'btn-outline-primary'}`}
                                         onClick={() => onSlotSelect(slot, selectedDate)}
                                     >
-                                        {slot}
+                                        {formatTime12Hour(slot)}
                                     </button>
                                 ))}
                             </div>
@@ -278,7 +289,7 @@
                                 {selectedDoctor ? (
                                     <div>
                                         <h5 className="fw-semibold mb-0">
-                                            Book with {selectedDoctor.user?.fullName}
+                                            Book with Dr. {selectedDoctor.user?.fullName}
                                         </h5>
                                         {selectedDoctor.bio && (
                                             <small className="text-muted">{selectedDoctor.bio}</small>
@@ -324,10 +335,10 @@
                                             <div className="alert alert-success py-2 d-flex align-items-center gap-2 mb-3">
                                                 <i className="bi bi-calendar-check-fill"></i>
                                                 <span>
-                                                    <strong>{selectedDate}</strong> at <strong>{selectedSlot}</strong>
+                                                    <strong>{selectedDate}</strong> at <strong>{formatTime12Hour(selectedSlot)}</strong>
                                                     {selectedDoctor.consultationFee > 0 && (
                                                         <span className="ms-2 text-muted">
-                                                            · ${selectedDoctor.consultationFee} fee
+                                                            · Rs {selectedDoctor.consultationFee} fee
                                                         </span>
                                                     )}
                                                 </span>

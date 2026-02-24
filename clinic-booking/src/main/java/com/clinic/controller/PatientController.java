@@ -53,7 +53,7 @@ public class PatientController {
     public String bookPage(Model model,
                            @RequestParam(required = false) String specialization,
                            @AuthenticationPrincipal UserDetails user) throws JsonProcessingException {
-        List<Doctor> doctors = specialization != null
+        List<Doctor> doctors = specialization != null && !specialization.isBlank()
                 ? doctorService.getAll().stream()
                     .filter(d -> d.getSpecialization() != null &&
                                  d.getSpecialization().name().equals(specialization) && d.isActive()).toList()

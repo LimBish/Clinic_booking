@@ -60,8 +60,8 @@
                 </tr>
                 <tr th:each="appt : ${appointments}">
                     <td th:text="${appt.appointmentDate}"></td>
-                    <td th:text="${appt.appointmentTime}"></td>
-                    <td th:text="${appt.doctor.user.fullName}"></td>
+                    <td th:text="${appt.appointmentTime != null ? #temporals.format(appt.appointmentTime, 'h:mm a') : '—'}"></td>
+                    <td th:text="${appt.doctor != null && appt.doctor.user != null ? 'Dr. ' + appt.doctor.user.fullName : '—'}"></td>
                     <td>
                         <span class="badge"
                               th:classappend="${appt.status.name() == 'CONFIRMED'}  ? 'bg-success' :
