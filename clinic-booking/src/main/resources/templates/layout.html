@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${pageTitle ?: 'ClinicBook'}">ClinicBook</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container py-4">
+
+    <!-- Flash: success messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Flash: error messages -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Param-based toasts (for redirect query params) -->
+    <div th:if="${param.booked}" class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2">
+        <i class="bi bi-calendar-check-fill"></i> Appointment booked successfully!
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${param.cancelled}" class="alert alert-warning alert-dismissible fade show d-flex align-items-center gap-2">
+        <i class="bi bi-calendar-x-fill"></i> Appointment cancelled.
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${param.updated}" class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2">
+        <i class="bi bi-person-check-fill"></i> Profile updated successfully!
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${param.created}" class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2">
+        <i class="bi bi-plus-circle-fill"></i> Doctor added successfully!
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${param.scheduled}" class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2">
+        <i class="bi bi-clock-fill"></i> Schedule saved!
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:replace="${content}"><!-- page content --></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<div th:replace="${scripts ?: ~{}}"></div>
+</body>
+</html>

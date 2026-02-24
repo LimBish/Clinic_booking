@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, ~{::scripts})}">
+<body>
+<div th:fragment="content">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/doctor/dashboard}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h3 class="fw-bold mb-0">My Availability</h3>
+            <p class="text-muted mb-0 small">Manage your weekly schedule and leave days</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- ── LEFT: Weekly schedule ─────────────────────────────────────────── -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-clock text-primary me-2"></i>Weekly Schedule</h5>
+                    <small class="text-muted">Set your regular working hours for each day</small>
+                </div>
+                <div class="card-body">
+                    <!-- Add/update day -->
+                    <form th:action="@{/doctor/schedule}" method="post" class="mb-4">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Day</label>
+                                <select name="dayOfWeek" class="form-select form-select-sm" required>
+                                    <option value="">— Select day —</option>
+                                    <option th:each="d : ${days}" th:value="${d}" th:text="${d}"></option>
+                                </select>
+                            </div>
+                            <div class="col-5">
+                                <label class="form-label fw-semibold small">Start</label>
+                                <input type="time" name="startTime" class="form-control form-control-sm"
+                                       value="08:00" required/>
+                            </div>
+                            <div class="col-5">
+                                <label class="form-label fw-semibold small">End</label>
+                                <input type="time" name="endTime" class="form-control form-control-sm"
+                                       value="17:00" required/>
+                            </div>
+                            <div class="col-2 d-flex align-items-end">
+                                <!-- hidden slotDuration default 30 -->
+                                <input type="hidden" name="slotDurationMinutes" value="30"/>
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Appointment Slot Duration</label>
+                                <select name="slotDurationMinutes" class="form-select form-select-sm">
+                                    <option value="15">15 minutes</option>
+                                    <option value="30" selected>30 minutes</option>
+                                    <option value="45">45 minutes</option>
+                                    <option value="60">1 hour</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Current schedule list -->
+                    <div th:if="${schedules.empty}" class="text-center py-3 text-muted small">
+                        <i class="bi bi-calendar-x" style="font-size:2rem"></i>
+                        <p class="mt-2 mb-0">No schedule set. Add your working days above.</p>
+                    </div>
+                    <div th:unless="${schedules.empty}">
+                        <p class="fw-semibold small text-muted mb-2">CURRENT SCHEDULE</p>
+                        <div class="list-group list-group-flush border rounded">
+                            <div th:each="s : ${schedules}"
+                                 class="list-group-item d-flex align-items-center justify-content-between py-2 px-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold"
+                                          style="min-width:80px" th:text="${s.dayOfWeek}"></span>
+                                    <div>
+                                        <div class="small fw-semibold"
+                                             th:text="${s.startTime + ' – ' + s.endTime}"></div>
+                                        <div class="text-muted" style="font-size:.75rem"
+                                             th:text="${s.slotDurationMinutes + '-min slots'}"></div>
+                                    </div>
+                                </div>
+                                <form th:action="@{/doctor/schedule/delete/{day}(day=${s.dayOfWeek})}" method="post">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Remove this day from your schedule?')">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── RIGHT: Leave / unavailability ─────────────────────────────────── -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-calendar-x text-danger me-2"></i>Mark Unavailability</h5>
+                    <small class="text-muted">Block specific dates — existing bookings will be auto-cancelled and patients notified</small>
+                </div>
+                <div class="card-body">
+                    <!-- Add leave form -->
+                    <form th:action="@{/doctor/leave}" method="post" class="mb-4">
+                        <div class="row g-2">
+                            <div class="col-7">
+                                <label class="form-label fw-semibold small">Date</label>
+                                <input type="date" name="leaveDate" class="form-control form-control-sm"
+                                       th:attr="min=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                                       required/>
+                            </div>
+                            <div class="col-5">
+                                <label class="form-label fw-semibold small">&nbsp;</label>
+                                <button type="submit" class="btn btn-danger btn-sm w-100 d-block">
+                                    <i class="bi bi-calendar-x me-1"></i>Block Date
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Reason (shown to clinic)</label>
+                                <input type="text" name="reason" class="form-control form-control-sm"
+                                       placeholder="e.g. Annual leave, Medical conference, Emergency..."/>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning py-2 mt-2 small d-flex gap-2 align-items-start mb-0">
+                            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+                            <span>Any confirmed appointments on the blocked date will be automatically cancelled and affected patients will be notified.</span>
+                        </div>
+                    </form>
+
+                    <!-- Upcoming leaves -->
+                    <p class="fw-semibold small text-muted mb-2">UPCOMING BLOCKED DATES</p>
+                    <div th:if="${leaves.empty}" class="text-center py-3 text-muted small">
+                        <i class="bi bi-calendar-check" style="font-size:2rem"></i>
+                        <p class="mt-2 mb-0">No upcoming leave days. You're fully available.</p>
+                    </div>
+                    <div th:unless="${leaves.empty}" class="list-group list-group-flush border rounded">
+                        <div th:each="leave : ${leaves}"
+                             class="list-group-item d-flex align-items-center justify-content-between py-2 px-3">
+                            <div>
+                                <div class="fw-semibold small" th:text="${leave.leaveDate}"></div>
+                                <div class="text-muted" style="font-size:.75rem"
+                                     th:text="${leave.reason ?: 'No reason specified'}"></div>
+                            </div>
+                            <form th:action="@{/doctor/leave/{id}/remove(id=${leave.id})}" method="post">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm"
+                                        onclick="return confirm('Remove this leave? You will be available on this date again.')">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary card -->
+            <div class="card border-0 shadow-sm mt-3 bg-info bg-opacity-10">
+                <div class="card-body py-3">
+                    <h6 class="fw-semibold mb-2"><i class="bi bi-info-circle text-info me-2"></i>How it works</h6>
+                    <ul class="small text-muted mb-0 ps-3">
+                        <li>Your <strong>weekly schedule</strong> defines which days and hours you work</li>
+                        <li>Patients can only book slots within your set hours</li>
+                        <li><strong>Blocked dates</strong> override the weekly schedule for specific days</li>
+                        <li>The clinic is notified whenever you update your availability</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<th:block th:fragment="scripts"></th:block>
+</body>
+</html>

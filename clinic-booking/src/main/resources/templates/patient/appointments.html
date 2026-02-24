@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, ~{::scripts})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">My Appointments</h3>
+        <a th:href="@{/patient/book}" class="btn btn-primary btn-sm">
+            <i class="bi bi-calendar-plus me-1"></i>Book New
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div th:if="${appointments.empty}" class="text-center py-5">
+                <i class="bi bi-calendar-x text-muted" style="font-size:3rem"></i>
+                <p class="text-muted mt-2 mb-3">You have no appointments yet.</p>
+                <a th:href="@{/patient/book}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-calendar-plus me-1"></i>Book your first appointment
+                </a>
+            </div>
+
+            <div th:unless="${appointments.empty}">
+                <div th:each="appt, i : ${appointments}" class="border-bottom p-4">
+                    <div class="d-flex align-items-start gap-3">
+
+                        <!-- Status icon column -->
+                        <div class="text-center flex-shrink-0" style="width:52px">
+                            <div th:switch="${appt.status.name()}">
+                                <div th:case="'CONFIRMED'"  class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center mx-auto" style="width:44px;height:44px">
+                                    <i class="bi bi-calendar-check text-success"></i>
+                                </div>
+                                <div th:case="'COMPLETED'"  class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center mx-auto" style="width:44px;height:44px">
+                                    <i class="bi bi-check2-circle text-primary"></i>
+                                </div>
+                                <div th:case="'CANCELLED'"  class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center mx-auto" style="width:44px;height:44px">
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                </div>
+                                <div th:case="*"            class="rounded-circle bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center mx-auto" style="width:44px;height:44px">
+                                    <i class="bi bi-clock text-secondary"></i>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mt-1" style="font-size:.65rem">#<span th:text="${i.count}"></span></small>
+                        </div>
+
+                        <!-- Main info -->
+                        <div class="flex-grow-1">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                                <div>
+                                    <div class="fw-semibold" th:text="${appt.doctor.user.fullName}"></div>
+                                    <div class="text-muted small"
+                                         th:text="${(appt.doctor.specialization != null ? #strings.replace(appt.doctor.specialization.name(), '_', ' ') : '') }"></div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-semibold" th:text="${appt.appointmentDate}"></div>
+                                    <div class="text-muted small" th:text="${appt.appointmentTime}"></div>
+                                </div>
+                            </div>
+
+                            <div th:if="${appt.reason}" class="mt-2 text-muted small">
+                                <i class="bi bi-chat-text me-1"></i><span th:text="${appt.reason}"></span>
+                            </div>
+
+                            <!-- Consultation notes (visible to patient after completion) -->
+                            <div th:if="${appt.status.name() == 'COMPLETED' && appt.consultationNotes != null}"
+                                 class="mt-2 p-3 bg-primary bg-opacity-10 rounded">
+                                <div class="fw-semibold small mb-1">
+                                    <i class="bi bi-journal-text text-primary me-1"></i>Consultation Notes
+                                    <span th:if="${appt.consultedAt}" class="text-muted fw-normal ms-2"
+                                          th:text="'· ' + ${#temporals.format(appt.consultedAt, 'MMM d, yyyy HH:mm')}"></span>
+                                </div>
+                                <p class="mb-0 small" th:text="${appt.consultationNotes}"></p>
+                            </div>
+                        </div>
+
+                        <!-- Status badge + cancel action -->
+                        <div class="flex-shrink-0 d-flex flex-column align-items-end gap-2">
+                            <span class="badge"
+                                  th:classappend="${appt.status.name() == 'CONFIRMED'}  ? 'bg-success' :
+                                                  (${appt.status.name() == 'COMPLETED'} ? 'bg-primary' :
+                                                  (${appt.status.name() == 'CANCELLED'} ? 'bg-danger'  : 'bg-secondary'))"
+                                  th:text="${appt.status}"></span>
+
+                            <div th:if="${appt.status.name() == 'CONFIRMED'}">
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        th:attr="data-bs-target='#cancelModal-' + ${appt.id}">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel confirmation modals -->
+    <div th:each="appt : ${appointments}" th:if="${appt.status.name() == 'CONFIRMED'}">
+        <div class="modal fade" th:id="'cancelModal-' + ${appt.id}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-semibold">Cancel Appointment</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-1">Are you sure you want to cancel your appointment with</p>
+                        <p class="fw-semibold"
+                           th:text="${'Dr. ' + appt.doctor.user.fullName + ' on ' + appt.appointmentDate + ' at ' + appt.appointmentTime + '?'}"></p>
+                        <p class="text-muted small mb-0">This cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep It</button>
+                        <form th:action="@{/patient/appointments/{id}/cancel(id=${appt.id})}" method="post">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-circle me-1"></i>Yes, Cancel
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<th:block th:fragment="scripts"></th:block>
+</body>
+</html>

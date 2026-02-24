@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, ~{::scripts})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0">Welcome, <span th:text="${user.fullName}">Patient</span>!</h3>
+            <p class="text-muted mb-0">Here are your upcoming appointments</p>
+        </div>
+        <a th:href="@{/patient/book}" class="btn btn-primary">
+            <i class="bi bi-calendar-plus me-2"></i>Book Appointment
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Upcoming</p>
+                            <h3 class="fw-bold mb-0" th:text="${upcoming.size()}">0</h3>
+                        </div>
+                        <i class="bi bi-calendar-check" style="font-size:2.5rem;opacity:0.5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-calendar-check text-primary me-2"></i>Upcoming Appointments</h5>
+        </div>
+        <div class="card-body p-0">
+            <div th:if="${upcoming.empty}" class="text-center py-5">
+                <i class="bi bi-calendar-x text-muted" style="font-size:3rem"></i>
+                <p class="text-muted mt-2">No upcoming appointments</p>
+                <a th:href="@{/patient/book}" class="btn btn-primary btn-sm">Book Now</a>
+            </div>
+            <div class="table-responsive" th:unless="${upcoming.empty}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Doctor</th>
+                        <th>Specialization</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="appt : ${upcoming}">
+                        <td class="fw-semibold" th:text="${appt.doctor.user.fullName}"></td>
+                        <td><span class="badge bg-light text-dark" th:text="${appt.doctor.specialization}"></span></td>
+                        <td th:text="${appt.appointmentDate}"></td>
+                        <td th:text="${appt.appointmentTime}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${appt.status.name() == 'CONFIRMED'} ? 'bg-success' :
+                                                  (${appt.status.name() == 'PENDING'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                                  th:text="${appt.status}"></span>
+                        </td>
+                        <td>
+                            <form th:action="@{/patient/appointments/{id}/cancel(id=${appt.id})}" method="post"
+                                  onsubmit="return confirm('Cancel this appointment?')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:fragment="scripts"></th:block>
+</body>
+</html>

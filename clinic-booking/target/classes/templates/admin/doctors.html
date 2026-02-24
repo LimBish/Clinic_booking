@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, ~{::scripts})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0">Manage Doctors</h3>
+            <p class="text-muted mb-0 small" th:text="${doctors.size() + ' doctors registered'}"></p>
+        </div>
+        <a th:href="@{/admin/doctors/new}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Add Doctor
+        </a>
+    </div>
+
+    <!-- flash success/error handled by layout.html -->
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div th:if="${doctors.empty}" class="text-center py-5">
+                <i class="bi bi-person-x text-muted" style="font-size:3rem"></i>
+                <p class="text-muted mt-2 mb-3">No doctors registered yet.</p>
+                <a th:href="@{/admin/doctors/new}" class="btn btn-primary btn-sm">Add First Doctor</a>
+            </div>
+            <div class="table-responsive" th:unless="${doctors.empty}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Specialization</th>
+                        <th>Fee</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="doc : ${doctors}">
+                        <td class="fw-semibold" th:text="${doc.user.fullName}"></td>
+                        <td class="text-muted small" th:text="${doc.user.email}"></td>
+                        <td>
+                            <span class="badge bg-light text-dark"
+                                  th:text="${doc.specialization != null ? #strings.replace(doc.specialization.name(), '_', ' ') : '—'}"></span>
+                        </td>
+                        <td th:text="${doc.consultationFee != null ? '$' + doc.consultationFee : '—'}"></td>
+                        <td>
+                            <span th:classappend="${doc.active} ? 'bg-success' : 'bg-secondary'"
+                                  class="badge" th:text="${doc.active ? 'Active' : 'Inactive'}"></span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a th:href="@{/admin/doctors/{id}/edit(id=${doc.id})}"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-pencil me-1"></i>Edit
+                                </a>
+                                <form th:action="@{/admin/doctors/{id}/toggle(id=${doc.id})}" method="post">
+                                    <button type="submit" class="btn btn-sm"
+                                            th:classappend="${doc.active} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                            th:text="${doc.active ? 'Deactivate' : 'Activate'}"></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:fragment="scripts"></th:block>
+</body>
+</html>

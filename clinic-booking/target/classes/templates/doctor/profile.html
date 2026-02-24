@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, ~{::scripts})}">
+<body>
+<div th:fragment="content">
+    <h3 class="fw-bold mb-4">My Profile</h3>
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-semibold mb-4">Account Details</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-muted">FULL NAME</label>
+                            <p class="mb-0 fw-semibold" th:text="${user.fullName}"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-muted">EMAIL</label>
+                            <p class="mb-0" th:text="${user.email}"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-muted">PHONE</label>
+                            <p class="mb-0" th:text="${user.phone ?: '—'}"></p>
+                        </div>
+                        <div class="col-md-6" th:if="${doctor != null}">
+                            <label class="form-label fw-semibold small text-muted">SPECIALIZATION</label>
+                            <p class="mb-0" th:text="${doctor.specialization != null ?
+                                #strings.replace(doctor.specialization.name(), '_', ' ') : '—'}"></p>
+                        </div>
+                        <div class="col-md-6" th:if="${doctor != null}">
+                            <label class="form-label fw-semibold small text-muted">CONSULTATION FEE</label>
+                            <p class="mb-0 text-success fw-semibold"
+                               th:text="${doctor.consultationFee != null ? '$' + doctor.consultationFee : '—'}"></p>
+                        </div>
+                        <div class="col-12" th:if="${doctor?.bio != null}">
+                            <label class="form-label fw-semibold small text-muted">BIO</label>
+                            <p class="mb-0 text-muted" th:text="${doctor.bio}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-semibold mb-3">Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a th:href="@{/doctor/schedule}" class="btn btn-outline-primary">
+                            <i class="bi bi-calendar-week me-2"></i>Manage My Schedule
+                        </a>
+                        <a th:href="@{/doctor/dashboard}" class="btn btn-outline-secondary">
+                            <i class="bi bi-speedometer2 me-2"></i>Today's Appointments
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:fragment="scripts"></th:block>
+</body>
+</html>

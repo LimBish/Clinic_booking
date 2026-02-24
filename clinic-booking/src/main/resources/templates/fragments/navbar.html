@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">
+            <i class="bi bi-hospital-fill me-2"></i>ClinicBook
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav ms-auto align-items-center gap-2">
+                <li class="nav-item" sec:authorize="hasRole('PATIENT')">
+                    <a class="nav-link" th:href="@{/patient/dashboard}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('PATIENT')">
+                    <a class="nav-link" th:href="@{/patient/book}"><i class="bi bi-calendar-plus me-1"></i>Book</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('PATIENT')">
+                    <a class="nav-link" th:href="@{/patient/appointments}"><i class="bi bi-list-check me-1"></i>Appointments</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('DOCTOR')">
+                    <a class="nav-link" th:href="@{/doctor/dashboard}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('DOCTOR')">
+                    <a class="nav-link" th:href="@{/doctor/schedule}"><i class="bi bi-calendar-week me-1"></i>Schedule</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/doctors}"><i class="bi bi-people me-1"></i>Doctors</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-box-arrow-right me-1"></i>Logout
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/login}">Sign In</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, ~{::scripts})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex align-items-center mb-4 gap-3">
+        <a th:href="@{/admin/doctors}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h3 class="fw-bold mb-0" th:text="${doctor.user.fullName}">Edit Doctor</h3>
+            <small class="text-muted" th:text="${doctor.user.email}"></small>
+        </div>
+        <span th:classappend="${doctor.active} ? 'bg-success' : 'bg-secondary'"
+              class="badge ms-auto" th:text="${doctor.active ? 'Active' : 'Inactive'}"></span>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span th:text="${error}"></span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Doctor info -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-person-badge text-primary me-2"></i>Doctor Info</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/doctors/{id}(id=${doctor.id})}" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Full Name</label>
+                                <input type="text" name="fullName" class="form-control"
+                                       th:value="${doctor.user.fullName}" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Phone</label>
+                                <input type="text" name="phone" class="form-control" th:value="${doctor.user.phone}"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Specialization</label>
+                                <select name="specialization" class="form-select">
+                                    <option value="">— None —</option>
+                                    <option th:each="s : ${specializations}" th:value="${s}"
+                                            th:text="${#strings.replace(s.name(), '_', ' ')}"
+                                            th:selected="${s == doctor.specialization}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Consultation Fee ($)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="consultationFee" class="form-control"
+                                           th:value="${doctor.consultationFee}" min="0"/>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Bio</label>
+                                <textarea name="bio" class="form-control" rows="2" th:text="${doctor.bio}"></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-floppy me-1"></i>Save
+                            </button>
+                            <form th:action="@{/admin/doctors/{id}/toggle(id=${doctor.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm"
+                                        th:classappend="${doctor.active} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                        th:text="${doctor.active ? 'Deactivate' : 'Activate'}"></button>
+                            </form>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-clock text-primary me-2"></i>Set Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/doctors/{id}/schedule(id=${doctor.id})}" method="post">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <select name="dayOfWeek" class="form-select form-select-sm">
+                                    <option th:each="d : ${ {'MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'}}"
+                                            th:value="${d}" th:text="${d}"></option>
+                                </select>
+                            </div>
+                            <div class="col-5">
+                                <input type="time" name="startTime" class="form-control form-control-sm" value="08:00"/>
+                            </div>
+                            <div class="col-5">
+                                <input type="time" name="endTime" class="form-control form-control-sm" value="17:00"/>
+                            </div>
+                            <div class="col-2">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">+</button>
+                            </div>
+                            <div class="col-12">
+                                <select name="slotDurationMinutes" class="form-select form-select-sm">
+                                    <option value="15">15 min</option>
+                                    <option value="30" selected>30 min</option>
+                                    <option value="45">45 min</option>
+                                    <option value="60">60 min</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Current schedules -->
+            <div class="card border-0 shadow-sm mb-3" th:unless="${schedules.empty}">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-2"
+                         th:each="s : ${schedules}">
+                        <span class="badge bg-primary bg-opacity-10 text-primary" th:text="${s.dayOfWeek}"></span>
+                        <span class="text-muted small" th:text="${s.startTime + ' – ' + s.endTime}"></span>
+                        <span class="badge bg-light text-dark" th:text="${s.slotDurationMinutes + 'min'}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaves -->
+            <div class="card border-0 shadow-sm" th:unless="${leaves == null or leaves.empty}">
+                <div class="card-header bg-white border-0 py-2">
+                    <h6 class="mb-0 fw-semibold small"><i class="bi bi-calendar-x text-danger me-1"></i>Upcoming Leave</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item py-2 px-3" th:each="l : ${leaves}">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-semibold small" th:text="${l.leaveDate}"></span>
+                            <span class="text-muted" style="font-size:.75rem" th:text="${l.reason ?: '—'}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:fragment="scripts"></th:block>
+</body>
+</html>

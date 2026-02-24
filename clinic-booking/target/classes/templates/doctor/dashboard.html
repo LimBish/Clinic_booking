@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, ~{::scripts})}">
+<body>
+<div th:fragment="content">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h3 class="fw-bold mb-0" th:text="'Good morning, Dr. ' + ${user.fullName}">Dashboard</h3>
+            <p class="text-muted mb-0" th:text="${today}"></p>
+        </div>
+        <a th:href="@{/doctor/schedule}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-calendar-week me-1"></i>Manage Schedule
+        </a>
+    </div>
+
+    <!-- Summary row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small">Today</p>
+                        <h3 class="fw-bold mb-0" th:text="${todayAppointments.size()}">0</h3>
+                        <small class="opacity-75">appointments</small>
+                    </div>
+                    <i class="bi bi-calendar-day" style="font-size:2.5rem;opacity:.4"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small">Consulted Today</p>
+                        <h3 class="fw-bold mb-0"
+                            th:text="${#lists.size(todayAppointments.?[status.name() == 'COMPLETED'])}">0</h3>
+                    </div>
+                    <i class="bi bi-check2-circle" style="font-size:2.5rem;opacity:.4"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-warning">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small">Remaining</p>
+                        <h3 class="fw-bold mb-0"
+                            th:text="${#lists.size(todayAppointments.?[status.name() == 'CONFIRMED'])}">0</h3>
+                    </div>
+                    <i class="bi bi-hourglass-split" style="font-size:2.5rem;opacity:.4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Today's appointments -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-calendar-day text-primary me-2"></i>Today's Appointments</h5>
+                    <span class="badge bg-primary rounded-pill" th:text="${todayAppointments.size()}"></span>
+                </div>
+                <div class="card-body p-0">
+                    <div th:if="${todayAppointments.empty}" class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar-check" style="font-size:3rem"></i>
+                        <p class="mt-2">No appointments scheduled for today</p>
+                    </div>
+
+                    <div th:each="appt : ${todayAppointments}" class="border-bottom px-4 py-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <!-- Time column -->
+                            <div class="text-center" style="min-width:56px">
+                                <div class="fw-bold text-primary" th:text="${appt.appointmentTime}"></div>
+                                <small class="text-muted">
+                                    <span th:classappend="${appt.status.name() == 'COMPLETED'} ? 'text-success' :
+                                                          (${appt.status.name() == 'CONFIRMED'} ? 'text-primary' : 'text-danger')"
+                                          th:text="${appt.status}"></span>
+                                </small>
+                            </div>
+
+                            <!-- Patient info -->
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold" th:text="${appt.patient.fullName}"></div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-telephone me-1"></i><span th:text="${appt.patient.phone ?: '—'}"></span>
+                                </div>
+                                <div class="text-muted small" th:if="${appt.reason}">
+                                    <i class="bi bi-chat-text me-1"></i><span th:text="${appt.reason}"></span>
+                                </div>
+                                <!-- Show notes if consulted -->
+                                <div th:if="${appt.consultationNotes}" class="mt-1 p-2 bg-success bg-opacity-10 rounded small">
+                                    <i class="bi bi-journal-text text-success me-1"></i>
+                                    <span th:text="${appt.consultationNotes}"></span>
+                                    <div class="text-muted" th:if="${appt.consultedAt}"
+                                         th:text="'Completed at ' + ${#temporals.format(appt.consultedAt, 'HH:mm')}"></div>
+                                </div>
+                            </div>
+
+                            <!-- Action -->
+                            <div th:if="${appt.status.name() == 'CONFIRMED'}">
+                                <button type="button" class="btn btn-success btn-sm"
+                                        data-bs-toggle="modal"
+                                        th:attr="data-bs-target='#consultModal-' + ${appt.id}">
+                                    <i class="bi bi-check2-circle me-1"></i>Mark Consulted
+                                </button>
+                            </div>
+                            <div th:if="${appt.status.name() == 'COMPLETED'}">
+                                <span class="badge bg-success"><i class="bi bi-check2 me-1"></i>Done</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- This week overview -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-calendar-week text-primary me-2"></i>This Week</h5>
+                    <small class="text-muted" th:text="${weekStart + ' – ' + weekStart.plusDays(6)}"></small>
+                </div>
+                <div class="card-body p-0">
+                    <div th:if="${weekAppointments.empty}" class="text-center py-4 text-muted">
+                        <i class="bi bi-calendar-x" style="font-size:2.5rem"></i>
+                        <p class="mt-2 small">No appointments this week</p>
+                    </div>
+                    <!-- Group by date -->
+                    <div th:with="dates=${weekAppointments.![appointmentDate].toSet()}"
+                         th:each="appt : ${weekAppointments}"
+                         class="border-bottom px-3 py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small fw-semibold" th:text="${appt.patient.fullName}"></div>
+                                <div class="text-muted" style="font-size:.75rem"
+                                     th:text="${appt.appointmentDate + ' · ' + appt.appointmentTime}"></div>
+                            </div>
+                            <span class="badge rounded-pill"
+                                  th:classappend="${appt.status.name() == 'COMPLETED'}  ? 'bg-success' :
+                                                  (${appt.status.name() == 'CONFIRMED'}  ? 'bg-primary' :
+                                                  (${appt.status.name() == 'CANCELLED'}  ? 'bg-danger'  : 'bg-secondary'))"
+                                  th:text="${appt.status}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Consultation modals (one per today's CONFIRMED appointment) ───────── -->
+    <div th:each="appt : ${todayAppointments}" th:if="${appt.status.name() == 'CONFIRMED'}">
+        <div class="modal fade" th:id="'consultModal-' + ${appt.id}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <div>
+                            <h5 class="modal-title fw-semibold">Mark as Consulted</h5>
+                            <p class="text-muted small mb-0"
+                               th:text="${appt.patient.fullName + ' · ' + appt.appointmentTime}"></p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form th:action="@{/doctor/appointments/{id}/complete(id=${appt.id})}" method="post">
+                        <div class="modal-body pt-3">
+                            <!-- Patient info recap -->
+                            <div class="bg-light rounded p-3 mb-3 small">
+                                <div th:if="${appt.reason}">
+                                    <span class="text-muted">Chief complaint: </span>
+                                    <span th:text="${appt.reason}"></span>
+                                </div>
+                                <div>
+                                    <span class="text-muted">Phone: </span>
+                                    <span th:text="${appt.patient.phone ?: '—'}"></span>
+                                </div>
+                            </div>
+                            <label class="form-label fw-semibold">Consultation Notes <span class="text-danger">*</span></label>
+                            <textarea name="consultationNotes" class="form-control" rows="4" required
+                                      placeholder="Diagnosis, treatment prescribed, follow-up instructions..."></textarea>
+                            <div class="form-text">These notes will be logged in the system for clinic records.</div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check2-circle me-1"></i>Complete Consultation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<th:block th:fragment="scripts"></th:block>
+</body>
+</html>

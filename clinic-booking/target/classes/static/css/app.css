@@ -1,0 +1,47 @@
+:root {
+    --primary: #0d6efd;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.navbar {
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.btn {
+    border-radius: 8px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #6c757d;
+}
+
+.badge {
+    font-weight: 500;
+    padding: .4em .7em;
+    border-radius: 6px;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+/* Slot buttons */
+.slot-btn {
+    min-width: 80px;
+}

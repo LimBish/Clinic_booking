@@ -1,0 +1,6 @@
+package com.clinic.model.enums;
+
+public enum Specialization {
+    GENERAL_PRACTICE, CARDIOLOGY, DERMATOLOGY, PEDIATRICS,
+    ORTHOPEDICS, NEUROLOGY, GYNECOLOGY, OPHTHALMOLOGY, DENTISTRY
+}
