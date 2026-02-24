@@ -1,3 +1,3 @@
 package com.clinic.model.enums;
 
-public enum AppointmentStatus { PENDING, CONFIRMED, CANCELLED, COMPLETED }
+public enum AppointmentStatus { PENDING, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW}

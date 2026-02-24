@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content}, ~{::scripts})}">
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Patients</h3>
+    </div>
+
+    <form class="card border-0 shadow-sm mb-3" method="get" th:action="@{/admin/patients}">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small">Search by name / email</label>
+                    <input type="text" name="q" class="form-control" th:value="${q}" placeholder="e.g. john@demo.com"/>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
+                        <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Registered</label>
+                    <select name="registration" class="form-select">
+                        <option value="">All time</option>
+                        <option value="RECENT" th:selected="${registration == 'RECENT'}">Recently registered (30d)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Appointments</label>
+                    <select name="appointments" class="form-select">
+                        <option value="">Any</option>
+                        <option value="NONE" th:selected="${appointments == 'NONE'}">None</option>
+                        <option value="FEW" th:selected="${appointments == 'FEW'}">1-2</option>
+                        <option value="MANY" th:selected="${appointments == 'MANY'}">3+</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button class="btn btn-primary" type="submit">Go</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Registered</th>
+                    <th>Appointments</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${patients.empty}">
+                    <td colspan="6" class="text-center text-muted py-4">No patients found</td>
+                </tr>
+                <tr th:each="patient : ${patients}">
+                    <td class="fw-semibold" th:text="${patient.fullName}"></td>
+                    <td th:text="${patient.email}"></td>
+                    <td th:text="${patient.registrationDate ?: '—'}"></td>
+                    <td><span class="badge bg-light text-dark" th:text="${patient.appointmentCount}"></span></td>
+                    <td>
+                        <span class="badge" th:classappend="${patient.enabled} ? 'bg-success' : 'bg-secondary'"
+                              th:text="${patient.enabled} ? 'ACTIVE' : 'BLOCKED'"></span>
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/patients/{id}(id=${patient.id})}">View</a>
+                        <form class="d-inline" method="post" th:action="@{/admin/patients/{id}/toggle(id=${patient.id})}">
+                            <button type="submit" class="btn btn-sm"
+                                    th:classappend="${patient.enabled} ? 'btn-outline-danger' : 'btn-outline-success'"
+                                    th:text="${patient.enabled} ? 'Block' : 'Activate'"></button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<th:block th:fragment="scripts"></th:block>
+</body>
+</html>

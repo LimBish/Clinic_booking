@@ -68,6 +68,37 @@ public class Dtos {
     }
 
     @Data
+    public static class AdminPatientRow {
+        Long id;
+        String fullName;
+        String email;
+        LocalDate registrationDate;
+        boolean enabled;
+        Long appointmentCount;
+
+        public static AdminPatientRow of(Long id, String fullName, String email, LocalDate registrationDate, boolean enabled, Long appointmentCount) {
+            AdminPatientRow row = new AdminPatientRow();
+            row.setId(id);
+            row.setFullName(fullName);
+            row.setEmail(email);
+            row.setRegistrationDate(registrationDate);
+            row.setEnabled(enabled);
+            row.setAppointmentCount(appointmentCount);
+            return row;
+        }
+    }
+
+    @Data
+    public static class AdminDashboardPatientStats {
+        long totalPatients;
+        long newPatientsThisMonth;
+        long activePatients;
+        long frequentPatients;
+        long noShowPatients;
+    }
+
+
+    @Data
     public static class LeaveRequest {
         @NotNull(message = "Leave date is required")
         LocalDate leaveDate;

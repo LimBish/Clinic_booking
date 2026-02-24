@@ -3,10 +3,12 @@ package com.clinic.controller;
 import com.clinic.dto.Dtos.*;
 import com.clinic.exception.AppException;
 import com.clinic.exception.NotFoundException;
+import com.clinic.model.User;
 import com.clinic.model.enums.AppointmentStatus;
 import com.clinic.model.enums.Specialization;
 import com.clinic.repository.AppointmentRepository;
 import com.clinic.repository.DoctorLeaveRepository;
+import com.clinic.service.AdminPatientService;
 import com.clinic.service.DoctorService;
 import com.clinic.service.UserService;
 import jakarta.validation.Valid;
@@ -26,14 +28,22 @@ import java.time.LocalDate;
 public class AdminController {
 
     private final DoctorService doctorService;
-    private final UserService userService;
+//    private final UserService userService;
     private final AppointmentRepository appointmentRepo;
     private final DoctorLeaveRepository leaveRepo;
+    private final AdminPatientService adminPatientService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("totalDoctors", doctorService.getAll().size());
-        model.addAttribute("totalPatients", userService.countAll());
+        AdminDashboardPatientStats patientStats = adminPatientService.getDashboardPatientStats();
+//        model.addAttribute("totalPatients", userService.countAll());
+        model.addAttribute("totalPatients", patientStats.getTotalPatients());
+        model.addAttribute("newPatientsThisMonth", patientStats.getNewPatientsThisMonth());
+        model.addAttribute("activePatients", patientStats.getActivePatients());
+        model.addAttribute("frequentPatients", patientStats.getFrequentPatients());
+        model.addAttribute("noShowPatients", patientStats.getNoShowPatients());
+        model.addAttribute("mostFrequentPatients", adminPatientService.getMostFrequentPatients(5));
+        model.addAttribute("noShowPatientList", adminPatientService.getNoShowPatients());
         model.addAttribute("confirmedAppointments", appointmentRepo.countByStatus(AppointmentStatus.CONFIRMED));
         model.addAttribute("completedAppointments", appointmentRepo.countByStatus(AppointmentStatus.COMPLETED));
         model.addAttribute("recentAppointments", appointmentRepo.findAll().stream()
@@ -46,6 +56,45 @@ public class AdminController {
                         .limit(8).toList());
         return "admin/dashboard";
     }
+
+    @GetMapping("/patients")
+    public String patients(@RequestParam(required = false) String q,
+                           @RequestParam(required = false) String status,
+                           @RequestParam(required = false) String registration,
+                           @RequestParam(required = false) String appointments,
+                           Model model) {
+        model.addAttribute("patients", adminPatientService.getPatients(q, status, registration, appointments));
+        model.addAttribute("q", q);
+        model.addAttribute("status", status);
+        model.addAttribute("registration", registration);
+        model.addAttribute("appointments", appointments);
+        return "admin/patients";
+    }
+
+    @GetMapping("/patients/{id}")
+    public String patientProfile(@PathVariable Long id, Model model) {
+        User patient = adminPatientService.getPatient(id);
+        model.addAttribute("patient", patient);
+        model.addAttribute("appointments", adminPatientService.getPatientAppointments(id));
+        return "admin/patient-profile";
+    }
+
+    @PostMapping("/patients/{id}/toggle")
+    public String togglePatient(@PathVariable Long id,
+                                @RequestParam(defaultValue = "patients") String back,
+                                RedirectAttributes flash) {
+        try {
+            adminPatientService.togglePatient(id);
+            flash.addFlashAttribute("success", "Patient status updated.");
+        } catch (NotFoundException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+        if ("profile".equalsIgnoreCase(back)) {
+            return "redirect:/admin/patients/" + id;
+        }
+        return "redirect:/admin/patients";
+    }
+
 
     @GetMapping("/doctors")
     public String doctors(Model model) {

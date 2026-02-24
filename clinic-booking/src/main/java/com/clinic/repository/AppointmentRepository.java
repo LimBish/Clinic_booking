@@ -31,4 +31,19 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Count completed consultations per doctor
     long countByDoctorIdAndStatus(Long doctorId, AppointmentStatus status);
+
+    long countByPatientId(Long patientId);
+
+    long countByPatientIdAndStatus(Long patientId, AppointmentStatus status);
+
+    List<Appointment> findByPatientIdInOrderByAppointmentDateDescAppointmentTimeDesc(List<Long> patientIds);
+
+    @Query("select a.patient.id as patientId, count(a) as total from Appointment a where a.patient.id in :patientIds group by a.patient.id order by count(a) desc")
+    List<PatientAppointmentCount> findAppointmentCountsByPatientIds(List<Long> patientIds);
+
+    interface PatientAppointmentCount {
+        Long getPatientId();
+
+        Long getTotal();
+    }
 }
