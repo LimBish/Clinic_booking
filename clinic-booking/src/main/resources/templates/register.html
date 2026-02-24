@@ -24,22 +24,22 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Full Name</label>
                             <input type="text" class="form-control" th:field="*{fullName}"
-                                   placeholder="John Doe" required/>
+                                   required/>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Email</label>
                             <input type="email" class="form-control" th:field="*{email}"
-                                   placeholder="you@example.com" required/>
+                                   required/>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Phone</label>
                             <input type="text" class="form-control" th:field="*{phone}"
-                                   placeholder="+1 234 567 8900"/>
+                                   />
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Password</label>
                             <input type="password" class="form-control" th:field="*{password}"
-                                   placeholder="Min 6 characters" required minlength="6"/>
+                                   required minlength="6"/>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 fw-semibold">
                             <i class="bi bi-person-plus me-2"></i>Register

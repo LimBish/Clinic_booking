@@ -180,12 +180,13 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
-                    <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Appointments</th></tr></thead>
+                    <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Booked Doctors</th><th>Appointments</th></tr></thead>
                     <tbody>
-                    <tr th:if="${mostFrequentPatients.empty}"><td colspan="3" class="text-center text-muted py-3">No data</td></tr>
+                    <tr th:if="${mostFrequentPatients.empty}"><td colspan="4" class="text-center text-muted py-3">No data</td></tr>
                     <tr th:each="p : ${mostFrequentPatients}">
                         <td><a th:href="@{/admin/patients/{id}(id=${p.id})}" th:text="${p.fullName}"></a></td>
                         <td th:text="${p.email}"></td>
+                        <td class="small" th:text="${p.bookedDoctors}"></td>
                         <td th:text="${p.appointmentCount}"></td>
                     </tr>
                     </tbody>
@@ -200,9 +201,9 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
-                    <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Total Appointments</th></tr></thead>
+                    <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Booked Doctors</th><th>Total Appointments</th></tr></thead>
                     <tbody>
-                    <tr th:if="${noShowPatientList.empty}"><td colspan="3" class="text-center text-muted py-3">No no-show patients</td></tr>
+                    <tr th:if="${noShowPatientList.empty}"><td colspan="4" class="text-center text-muted py-3">No no-show patients</td></tr>
                     <tr th:each="p : ${noShowPatientList}">
                         <td><a th:href="@{/admin/patients/{id}(id=${p.id})}" th:text="${p.fullName}"></a></td>
                         <td th:text="${p.email}"></td>

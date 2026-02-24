@@ -34,7 +34,7 @@
 
                             {doc.consultationFee > 0 && (
                                 <div className="small text-success fw-semibold">
-                                    ${doc.consultationFee} / visit
+                                    Rs {doc.consultationFee} / visit
                                 </div>
                             )}
 

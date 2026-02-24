@@ -75,8 +75,10 @@ public class Dtos {
         LocalDate registrationDate;
         boolean enabled;
         Long appointmentCount;
+        String bookedDoctors;
 
-        public static AdminPatientRow of(Long id, String fullName, String email, LocalDate registrationDate, boolean enabled, Long appointmentCount) {
+        public static AdminPatientRow of(Long id, String fullName, String email, LocalDate registrationDate,
+                                         boolean enabled, Long appointmentCount, String bookedDoctors) {
             AdminPatientRow row = new AdminPatientRow();
             row.setId(id);
             row.setFullName(fullName);
@@ -84,6 +86,7 @@ public class Dtos {
             row.setRegistrationDate(registrationDate);
             row.setEnabled(enabled);
             row.setAppointmentCount(appointmentCount);
+            row.setBookedDoctors(bookedDoctors);
             return row;
         }
     }

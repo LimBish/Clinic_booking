@@ -26,6 +26,19 @@ public class AdminPatientService {
     private final UserRepository userRepository;
     private final AppointmentRepository appointmentRepository;
 
+    private String getBookedDoctorsDisplay(Long patientId) {
+        return appointmentRepository.findByPatientIdOrderByAppointmentDateDescAppointmentTimeDesc(patientId).stream()
+                .map(appt -> appt.getDoctor().getUser().getFullName())
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(name -> !name.isBlank())
+                .map(name -> name.startsWith("Dr.") ? name : "Dr. " + name)
+                .distinct()
+                .collect(Collectors.collectingAndThen(Collectors.joining(", "),
+                        names -> names.isBlank() ? "—" : names));
+    }
+
+
     public List<AdminPatientRow> getPatients(String search, String status, String registration, String appointments) {
         List<User> patients = userRepository.findByRole(Role.PATIENT);
 
@@ -72,7 +85,8 @@ public class AdminPatientService {
                         p.getEmail(),
                         p.getCreatedAt() == null ? null : p.getCreatedAt().toLocalDate(),
                         p.isEnabled(),
-                        appointmentCounts.getOrDefault(p.getId(), 0L)
+                        appointmentCounts.getOrDefault(p.getId(), 0L),
+                        getBookedDoctorsDisplay(p.getId())
                 ))
                 .toList();
     }
@@ -142,7 +156,7 @@ public class AdminPatientService {
                     User patient = byId.get(c.getPatientId());
                     return AdminPatientRow.of(patient.getId(), patient.getFullName(), patient.getEmail(),
                             patient.getCreatedAt() == null ? null : patient.getCreatedAt().toLocalDate(),
-                            patient.isEnabled(), c.getTotal());
+                            patient.isEnabled(), c.getTotal(), getBookedDoctorsDisplay(patient.getId()));
                 })
                 .toList();
     }
@@ -157,7 +171,8 @@ public class AdminPatientService {
                         p.getEmail(),
                         p.getCreatedAt() == null ? null : p.getCreatedAt().toLocalDate(),
                         p.isEnabled(),
-                        appointmentRepository.countByPatientId(p.getId())
+                        appointmentRepository.countByPatientId(p.getId()),
+                        getBookedDoctorsDisplay(p.getId())
                 ))
                 .sorted(Comparator.comparing(AdminPatientRow::getAppointmentCount).reversed())
                 .toList();

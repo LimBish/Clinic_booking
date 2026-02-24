@@ -53,19 +53,21 @@
                     <th>Email</th>
                     <th>Registered</th>
                     <th>Appointments</th>
+                    <th>Booked Doctors</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:if="${patients.empty}">
-                    <td colspan="6" class="text-center text-muted py-4">No patients found</td>
+                    <td colspan="7" class="text-center text-muted py-4">No patients found</td>
                 </tr>
                 <tr th:each="patient : ${patients}">
                     <td class="fw-semibold" th:text="${patient.fullName}"></td>
                     <td th:text="${patient.email}"></td>
                     <td th:text="${patient.registrationDate ?: '—'}"></td>
                     <td><span class="badge bg-light text-dark" th:text="${patient.appointmentCount}"></span></td>
+                    <td class="small" th:text="${patient.bookedDoctors}"></td>
                     <td>
                         <span class="badge" th:classappend="${patient.enabled} ? 'bg-success' : 'bg-secondary'"
                               th:text="${patient.enabled} ? 'ACTIVE' : 'BLOCKED'"></span>

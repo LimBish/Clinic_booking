@@ -41,7 +41,7 @@
                             <span class="badge bg-light text-dark"
                                   th:text="${doc.specialization != null ? #strings.replace(doc.specialization.name(), '_', ' ') : '—'}"></span>
                         </td>
-                        <td th:text="${doc.consultationFee != null ? '$' + doc.consultationFee : '—'}"></td>
+                        <td th:text="${doc.consultationFee != null ? 'Rs ' + doc.consultationFee : '—'}"></td>
                         <td>
                             <span th:classappend="${doc.active} ? 'bg-success' : 'bg-secondary'"
                                   class="badge" th:text="${doc.active ? 'Active' : 'Inactive'}"></span>
