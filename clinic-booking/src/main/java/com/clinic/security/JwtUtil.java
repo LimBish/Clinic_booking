@@ -33,8 +33,14 @@ public class JwtUtil {
     }
 
     public String extractEmail(String token) {
-        return Jwts.parserBuilder().setSigningKey(key()).build()
-                .parseClaimsJws(token).getBody().getSubject();
+        try {
+            return Jwts.parserBuilder().setSigningKey(key()).build()
+                    .parseClaimsJws(token).getBody().getSubject();
+        } catch (ExpiredJwtException e) {
+            throw new ExpiredTokenException("expired");
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new InvalidTokenException("invalid");
+        }
     }
 
     public boolean validate(String token, UserDetails user) {
@@ -42,6 +48,14 @@ public class JwtUtil {
             return extractEmail(token).equals(user.getUsername()) &&
                    !Jwts.parserBuilder().setSigningKey(key()).build()
                        .parseClaimsJws(token).getBody().getExpiration().before(new Date());
-        } catch (JwtException e) { return false; }
+        } catch (RuntimeException e) { return false; }
+    }
+
+    public static class InvalidTokenException extends RuntimeException {
+        public InvalidTokenException(String message) { super(message); }
+    }
+
+    public static class ExpiredTokenException extends RuntimeException {
+        public ExpiredTokenException(String message) { super(message); }
     }
 }

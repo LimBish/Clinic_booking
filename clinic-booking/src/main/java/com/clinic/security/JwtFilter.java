@@ -36,8 +36,16 @@ public class JwtFilter extends OncePerRequestFilter {
                     var auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                     SecurityContextHolder.getContext().setAuthentication(auth);
+                } else {
+                    req.setAttribute("jwt_error", "incorrect JWT token");
+                    }
+                } catch (JwtUtil.ExpiredTokenException e) {
+                    req.setAttribute("jwt_error", "expired token");
+                } catch (JwtUtil.InvalidTokenException e) {
+                    req.setAttribute("jwt_error", "incorrect JWT token");
+                } catch (Exception e) {
+                    req.setAttribute("jwt_error", "incorrect JWT token");
                 }
-            } catch (Exception ignored) {}
         }
         chain.doFilter(req, res);
     }

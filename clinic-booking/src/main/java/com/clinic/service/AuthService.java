@@ -39,4 +39,10 @@ public class AuthService {
                 .orElseThrow(() -> new NotFoundException("User", req.getEmail()));
         return AuthResponse.of(jwtUtil.generate(userDetails), user.getRole().name(), user.getFullName());
     }
+    public AuthResponse loginBasicCredentials(String email, String password) {
+        LoginRequest req = new LoginRequest();
+        req.setEmail(email);
+        req.setPassword(password);
+        return login(req);
+    }
 }

@@ -1,9 +1,11 @@
 package com.clinic.config;
 
 import com.clinic.security.JwtFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -46,8 +48,19 @@ public class SecurityConfig {
 //            .csrf(c -> c.ignoringRequestMatchers("/api/**"))
                 .csrf(c -> c.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e.authenticationEntryPoint((req, res, ex) -> {
+                    if (req.getRequestURI().startsWith("/api/")) {
+                        String msg = (String) req.getAttribute("jwt_error");
+                        if (msg == null || msg.isBlank()) msg = "Unauthorized";
+                        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                        res.getWriter().write("{\"message\":\"" + msg + "\"}");
+                        return;
+                    }
+                    res.sendRedirect("/login");
+                }))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/api/auth/**").permitAll()
+                    .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/api/auth/**", "/api/auth/basic-login").permitAll()
                 .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/doctor/**", "/api/doctor/**").hasRole("DOCTOR")
                 .requestMatchers("/patient/**", "/api/patient/**").hasRole("PATIENT")

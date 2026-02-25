@@ -13,6 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
@@ -80,4 +83,33 @@ public class AuthController {
     public ResponseEntity<AuthResponse> apiLogin(@Valid @RequestBody LoginRequest req) {
         return ResponseEntity.ok(authService.login(req));
     }
+
+    @PostMapping("/api/auth/basic-login")
+    @ResponseBody
+    public ResponseEntity<?> apiBasicLogin(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Basic ")) {
+            return ResponseEntity.status(401).body(new ApiMessage("Missing Basic Authorization header"));
+        }
+
+        String base64 = authHeader.substring(6).trim();
+        String decoded;
+        try {
+            decoded = new String(Base64.getDecoder().decode(base64), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(401).body(new ApiMessage("Invalid Basic credentials format"));
+        }
+
+        int split = decoded.indexOf(':');
+        if (split < 1) {
+            return ResponseEntity.status(401).body(new ApiMessage("Invalid Basic credentials format"));
+        }
+
+        String email = decoded.substring(0, split);
+        String password = decoded.substring(split + 1);
+        AuthResponse auth = authService.loginBasicCredentials(email, password);
+        return ResponseEntity.ok(new TokenResponse(auth.getToken()));
+    }
+
+    public record ApiMessage(String message) {}
+    public record TokenResponse(String token) {}
 }
