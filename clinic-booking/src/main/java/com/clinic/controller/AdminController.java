@@ -36,7 +36,7 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         AdminDashboardPatientStats patientStats = adminPatientService.getDashboardPatientStats();
-//        model.addAttribute("totalPatients", userService.countAll());
+        model.addAttribute("totalDoctors", doctorService.getAll().size());
         model.addAttribute("totalPatients", patientStats.getTotalPatients());
         model.addAttribute("newPatientsThisMonth", patientStats.getNewPatientsThisMonth());
         model.addAttribute("activePatients", patientStats.getActivePatients());

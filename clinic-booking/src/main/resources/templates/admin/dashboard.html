@@ -115,7 +115,7 @@
                             <tbody>
                             <tr th:each="appt : ${recentAppointments}">
                                 <td th:text="${appt.patient.fullName}"></td>
-                                <td class="small" th:text="${appt.doctor.user.fullName}"></td>
+                                <td th:text="'Dr. ' + ${appt.doctor.user.fullName}"></td>
                                 <td class="small" th:text="${appt.appointmentDate}"></td>
                                 <td class="small" th:text="${appt.appointmentTime}"></td>
                                 <td>
