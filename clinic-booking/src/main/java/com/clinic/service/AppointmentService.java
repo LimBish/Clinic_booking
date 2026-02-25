@@ -20,8 +20,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -53,10 +55,25 @@ public class AppointmentService {
 //                    "Dr. " + doctor.getUser().getFullName() + " is not available on "
         List<DoctorSchedule> schedules = scheduleRepo
                 .findByDoctorIdAndDayOfWeek(doctor.getId(), req.getAppointmentDate().getDayOfWeek());
-        if (schedules.isEmpty())
-            throw new AppException(
-                    + req.getAppointmentDate().getDayOfWeek().toString().charAt(0)
-                    + req.getAppointmentDate().getDayOfWeek().toString().substring(1).toLowerCase() + "s.");
+
+//        BUG
+//        if (schedules.isEmpty())
+//            throw new AppException(
+//                    + req.getAppointmentDate().getDayOfWeek().toString().charAt(0)
+//                    + req.getAppointmentDate().getDayOfWeek().toString().substring(1).toLowerCase() + "s.");
+
+        if (schedules.isEmpty()) {
+            String dayName = req.getAppointmentDate().getDayOfWeek().toString();
+            String readableDay = dayName.charAt(0) + dayName.substring(1).toLowerCase();
+            throw new AppException(doctor.getUser().getFullName() + " is not available on " + readableDay + "s.");
+        }
+
+//        if (schedules.isEmpty()) {
+//            String day = req.getAppointmentDate()
+//                    .getDayOfWeek()
+//                    .getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+//            throw new AppException(day + "s.");
+//        }
 
         // Check doctor has not marked that specific date as leave
         if (leaveRepo.existsByDoctorIdAndLeaveDate(doctor.getId(), req.getAppointmentDate()))
