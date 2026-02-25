@@ -49,7 +49,12 @@ public class SecurityConfig {
                 .csrf(c -> c.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e -> e.authenticationEntryPoint((req, res, ex) -> {
-                    if (req.getRequestURI().startsWith("/api/")) {
+                    String accept = req.getHeader("Accept");
+                    boolean apiRequest = req.getRequestURI().startsWith("/api/")
+                            || req.getRequestURI().contains("/api/")
+                            || (accept != null && accept.contains("application/json"));
+
+                    if (apiRequest) {
                         String msg = (String) req.getAttribute("jwt_error");
                         if (msg == null || msg.isBlank()) msg = "Unauthorized";
                         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
