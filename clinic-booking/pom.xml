@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.clinic</groupId>
     <artifactId>clinic-booking</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>Clinic Appointment Booking System</name>
 
     <properties>
