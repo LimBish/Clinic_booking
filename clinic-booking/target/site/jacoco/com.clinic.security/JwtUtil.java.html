@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Clinic Appointment Booking System</a> &gt; <a href="index.source.html" class="el_package">com.clinic.security</a> &gt; <span class="el_source">JwtUtil.java</span></div><h1>JwtUtil.java</h1><pre class="source lang-java linenums">package com.clinic.security;
+
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+import java.security.Key;
+import java.util.Date;
+
+@Component
+<span class="fc" id="L13">public class JwtUtil {</span>
+
+    @Value(&quot;${app.jwt.secret}&quot;)
+    private String secret;
+
+    @Value(&quot;${app.jwt.expiration}&quot;)
+    private long expiration;
+
+    private Key key() {
+<span class="fc" id="L22">        return Keys.hmacShaKeyFor(secret.getBytes());</span>
+    }
+
+    public String generate(UserDetails user) {
+<span class="fc" id="L26">        return Jwts.builder()</span>
+<span class="fc" id="L27">                .setSubject(user.getUsername())</span>
+<span class="fc" id="L28">                .claim(&quot;role&quot;, user.getAuthorities().iterator().next().getAuthority())</span>
+<span class="fc" id="L29">                .setIssuedAt(new Date())</span>
+<span class="fc" id="L30">                .setExpiration(new Date(System.currentTimeMillis() + expiration))</span>
+<span class="fc" id="L31">                .signWith(key())</span>
+<span class="fc" id="L32">                .compact();</span>
+    }
+
+    public String extractEmail(String token) {
+        try {
+<span class="fc" id="L37">            return Jwts.parserBuilder().setSigningKey(key()).build()</span>
+<span class="fc" id="L38">                    .parseClaimsJws(token).getBody().getSubject();</span>
+<span class="nc" id="L39">        } catch (ExpiredJwtException e) {</span>
+<span class="nc" id="L40">            throw new ExpiredTokenException(&quot;expired&quot;);</span>
+<span class="nc" id="L41">        } catch (JwtException | IllegalArgumentException e) {</span>
+<span class="nc" id="L42">            throw new InvalidTokenException(&quot;invalid&quot;);</span>
+        }
+    }
+
+    public boolean validate(String token, UserDetails user) {
+        try {
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            return extractEmail(token).equals(user.getUsername()) &amp;&amp;</span>
+<span class="fc" id="L49">                   !Jwts.parserBuilder().setSigningKey(key()).build()</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">                       .parseClaimsJws(token).getBody().getExpiration().before(new Date());</span>
+<span class="nc" id="L51">        } catch (RuntimeException e) { return false; }</span>
+    }
+
+    public static class InvalidTokenException extends RuntimeException {
+<span class="nc" id="L55">        public InvalidTokenException(String message) { super(message); }</span>
+    }
+
+    public static class ExpiredTokenException extends RuntimeException {
+<span class="nc" id="L59">        public ExpiredTokenException(String message) { super(message); }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

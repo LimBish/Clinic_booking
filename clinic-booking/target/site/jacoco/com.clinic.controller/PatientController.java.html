@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PatientController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Clinic Appointment Booking System</a> &gt; <a href="index.source.html" class="el_package">com.clinic.controller</a> &gt; <span class="el_source">PatientController.java</span></div><h1>PatientController.java</h1><pre class="source lang-java linenums">package com.clinic.controller;
+
+import com.clinic.dto.Dtos.AppointmentRequest;
+import com.clinic.exception.AppException;
+import com.clinic.model.Doctor;
+import com.clinic.model.DoctorSchedule;
+import com.clinic.model.enums.Specialization;
+import com.clinic.repository.DoctorLeaveRepository;
+import com.clinic.service.AppointmentService;
+import com.clinic.service.DoctorService;
+import com.clinic.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.List;
+import java.util.Locale;
+
+@Controller
+@RequestMapping(&quot;/patient&quot;)
+@PreAuthorize(&quot;hasRole('PATIENT')&quot;)
+<span class="fc" id="L36">@RequiredArgsConstructor</span>
+public class PatientController {
+
+    private final AppointmentService appointmentService;
+    private final DoctorService doctorService;
+    private final DoctorLeaveRepository leaveRepo;
+    private final UserService userService;
+    private final ObjectMapper objectMapper;
+
+    @GetMapping(&quot;/dashboard&quot;)
+    public String dashboard(Model model, @AuthenticationPrincipal UserDetails user) {
+<span class="nc" id="L47">        model.addAttribute(&quot;upcoming&quot;, appointmentService.getPatientUpcoming(user.getUsername()));</span>
+<span class="nc" id="L48">        model.addAttribute(&quot;user&quot;, userService.findByEmail(user.getUsername()));</span>
+<span class="nc" id="L49">        return &quot;patient/dashboard&quot;;</span>
+    }
+
+    @GetMapping(&quot;/book&quot;)
+    public String bookPage(Model model,
+                           @RequestParam(required = false) String specialization,
+                           @AuthenticationPrincipal UserDetails user) throws JsonProcessingException {
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        List&lt;Doctor&gt; doctors = specialization != null &amp;&amp; !specialization.isBlank()</span>
+<span class="nc" id="L57">                ? doctorService.getAll().stream()</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">                    .filter(d -&gt; d.getSpecialization() != null &amp;&amp;</span>
+<span class="nc bnc" id="L59" title="All 4 branches missed.">                                 d.getSpecialization().name().equals(specialization) &amp;&amp; d.isActive()).toList()</span>
+<span class="nc" id="L60">                : doctorService.getAllActive();</span>
+<span class="nc" id="L61">        model.addAttribute(&quot;specializations&quot;, Specialization.values());</span>
+<span class="nc" id="L62">        model.addAttribute(&quot;doctors&quot;, doctors);</span>
+<span class="nc" id="L63">        model.addAttribute(&quot;doctorsJson&quot;, serializeDoctors(doctors));</span>
+<span class="nc" id="L64">        return &quot;patient/book&quot;;</span>
+    }
+
+    @PostMapping(&quot;/book&quot;)
+    public String book(@Valid @ModelAttribute AppointmentRequest req,
+                       @AuthenticationPrincipal UserDetails user,
+                       Model model) throws JsonProcessingException {
+        try {
+<span class="fc" id="L72">            appointmentService.book(user.getUsername(), req);</span>
+<span class="fc" id="L73">            return &quot;redirect:/patient/appointments?booked&quot;;</span>
+<span class="nc" id="L74">        } catch (AppException e) {</span>
+<span class="nc" id="L75">            List&lt;Doctor&gt; doctors = doctorService.getAllActive();</span>
+<span class="nc" id="L76">            model.addAttribute(&quot;error&quot;, e.getMessage());</span>
+<span class="nc" id="L77">            model.addAttribute(&quot;specializations&quot;, Specialization.values());</span>
+<span class="nc" id="L78">            model.addAttribute(&quot;doctors&quot;, doctors);</span>
+<span class="nc" id="L79">            model.addAttribute(&quot;doctorsJson&quot;, serializeDoctors(doctors));</span>
+<span class="nc" id="L80">            return &quot;patient/book&quot;;</span>
+        }
+    }
+
+    @GetMapping(&quot;/appointments&quot;)
+    public String appointments(Model model, @AuthenticationPrincipal UserDetails user) {
+<span class="nc" id="L86">        model.addAttribute(&quot;appointments&quot;, appointmentService.getPatientHistory(user.getUsername()));</span>
+<span class="nc" id="L87">        return &quot;patient/appointments&quot;;</span>
+    }
+
+    @PostMapping(&quot;/appointments/{id}/cancel&quot;)
+    public String cancel(@PathVariable Long id,
+                         @AuthenticationPrincipal UserDetails user,
+                         RedirectAttributes flash) {
+        try {
+<span class="nc" id="L95">            appointmentService.cancel(id, user.getUsername());</span>
+<span class="nc" id="L96">            flash.addFlashAttribute(&quot;success&quot;, &quot;Appointment cancelled successfully.&quot;);</span>
+<span class="nc" id="L97">        } catch (AppException e) {</span>
+<span class="nc" id="L98">            flash.addFlashAttribute(&quot;error&quot;, e.getMessage());</span>
+<span class="nc" id="L99">        }</span>
+<span class="nc" id="L100">        return &quot;redirect:/patient/appointments&quot;;</span>
+    }
+
+    @GetMapping(&quot;/profile&quot;)
+    public String profile(Model model, @AuthenticationPrincipal UserDetails user) {
+<span class="nc" id="L105">        model.addAttribute(&quot;user&quot;, userService.findByEmail(user.getUsername()));</span>
+<span class="nc" id="L106">        return &quot;patient/profile&quot;;</span>
+    }
+
+    @PostMapping(&quot;/profile&quot;)
+    public String updateProfile(@RequestParam String fullName,
+                                @RequestParam String phone,
+                                @AuthenticationPrincipal UserDetails user,
+                                RedirectAttributes flash) {
+        try {
+<span class="nc" id="L115">            userService.updateProfile(user.getUsername(), fullName, phone);</span>
+<span class="nc" id="L116">            flash.addFlashAttribute(&quot;success&quot;, &quot;Profile updated successfully.&quot;);</span>
+<span class="nc" id="L117">        } catch (AppException e) {</span>
+<span class="nc" id="L118">            flash.addFlashAttribute(&quot;error&quot;, e.getMessage());</span>
+<span class="nc" id="L119">        }</span>
+<span class="nc" id="L120">        return &quot;redirect:/patient/profile&quot;;</span>
+    }
+
+    /** REST: available slots — called by React slot picker */
+    @GetMapping(&quot;/api/slots&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;List&lt;String&gt;&gt; getSlots(
+            @RequestParam Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+<span class="nc" id="L129">        return ResponseEntity.ok(appointmentService.getAvailableSlots(doctorId, date));</span>
+    }
+
+    /** REST: doctor availability info — working days and leave dates for date picker hints */
+    @GetMapping(&quot;/api/doctor-availability&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;?&gt; getDoctorAvailability(@RequestParam Long doctorId) {
+<span class="nc" id="L136">        List&lt;DoctorSchedule&gt; schedules = doctorService.getSchedules(doctorId);</span>
+<span class="nc" id="L137">        List&lt;String&gt; workingDays = schedules.stream()</span>
+<span class="nc" id="L138">                .map(s -&gt; s.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase())</span>
+<span class="nc" id="L139">                .toList();</span>
+<span class="nc" id="L140">        List&lt;String&gt; leaveDates = leaveRepo</span>
+<span class="nc" id="L141">                .findByDoctorIdAndLeaveDateGreaterThanEqualOrderByLeaveDate(doctorId, LocalDate.now())</span>
+<span class="nc" id="L142">                .stream().map(l -&gt; l.getLeaveDate().toString()).toList();</span>
+
+<span class="nc" id="L144">        ObjectNode result = objectMapper.createObjectNode();</span>
+<span class="nc" id="L145">        ArrayNode days = objectMapper.createArrayNode();</span>
+<span class="nc" id="L146">        workingDays.forEach(days::add);</span>
+<span class="nc" id="L147">        ArrayNode leaves = objectMapper.createArrayNode();</span>
+<span class="nc" id="L148">        leaveDates.forEach(leaves::add);</span>
+<span class="nc" id="L149">        result.set(&quot;workingDays&quot;, days);</span>
+<span class="nc" id="L150">        result.set(&quot;leaveDates&quot;, leaves);</span>
+<span class="nc" id="L151">        return ResponseEntity.ok(result);</span>
+    }
+
+    private String serializeDoctors(List&lt;Doctor&gt; doctors) throws JsonProcessingException {
+<span class="nc" id="L155">        ArrayNode arr = objectMapper.createArrayNode();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        for (Doctor d : doctors) {</span>
+<span class="nc" id="L157">            ObjectNode node = objectMapper.createObjectNode();</span>
+<span class="nc" id="L158">            node.put(&quot;id&quot;, d.getId());</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">            node.put(&quot;consultationFee&quot;, d.getConsultationFee() != null ? d.getConsultationFee() : 0);</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">            node.put(&quot;specialization&quot;, d.getSpecialization() != null ?</span>
+<span class="nc" id="L161">                    d.getSpecialization().name().replace(&quot;_&quot;, &quot; &quot;) : &quot;&quot;);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            node.put(&quot;bio&quot;, d.getBio() != null ? d.getBio() : &quot;&quot;);</span>
+<span class="nc" id="L163">            ObjectNode userNode = objectMapper.createObjectNode();</span>
+<span class="nc" id="L164">            userNode.put(&quot;fullName&quot;, d.getUser().getFullName());</span>
+<span class="nc" id="L165">            node.set(&quot;user&quot;, userNode);</span>
+
+            // Working days hint for the date picker
+<span class="nc" id="L168">            List&lt;String&gt; workingDays = doctorService.getSchedules(d.getId()).stream()</span>
+<span class="nc" id="L169">                    .map(s -&gt; s.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase())</span>
+<span class="nc" id="L170">                    .toList();</span>
+<span class="nc" id="L171">            ArrayNode wdNode = objectMapper.createArrayNode();</span>
+<span class="nc" id="L172">            workingDays.forEach(wdNode::add);</span>
+<span class="nc" id="L173">            node.set(&quot;workingDays&quot;, wdNode);</span>
+<span class="nc" id="L174">            arr.add(node);</span>
+<span class="nc" id="L175">        }</span>
+<span class="nc" id="L176">        return objectMapper.writeValueAsString(arr);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

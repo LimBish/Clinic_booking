@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Clinic Appointment Booking System</a> &gt; <a href="index.source.html" class="el_package">com.clinic.service</a> &gt; <span class="el_source">NotificationService.java</span></div><h1>NotificationService.java</h1><pre class="source lang-java linenums">package com.clinic.service;
+
+import com.clinic.model.Appointment;
+import com.clinic.model.Doctor;
+import com.clinic.model.DoctorLeave;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+
+@Service
+<span class="fc" id="L11">@Slf4j</span>
+<span class="fc" id="L12">public class NotificationService {</span>
+
+    public void sendConfirmation(Appointment appt) {
+<span class="fc" id="L15">        log.info(&quot;[NOTIFY] BOOKING CONFIRMED → Patient: {} | Dr. {} | {} at {}&quot;,</span>
+<span class="fc" id="L16">                appt.getPatient().getFullName(),</span>
+<span class="fc" id="L17">                appt.getDoctor().getUser().getFullName(),</span>
+<span class="fc" id="L18">                appt.getAppointmentDate(),</span>
+<span class="fc" id="L19">                appt.getAppointmentTime());</span>
+        // TODO: wire JavaMailSender / Twilio here
+<span class="fc" id="L21">    }</span>
+
+    public void sendCancellation(Appointment appt) {
+<span class="nc" id="L24">        log.info(&quot;[NOTIFY] APPOINTMENT CANCELLED → Patient: {} | Dr. {} | {}&quot;,</span>
+<span class="nc" id="L25">                appt.getPatient().getFullName(),</span>
+<span class="nc" id="L26">                appt.getDoctor().getUser().getFullName(),</span>
+<span class="nc" id="L27">                appt.getAppointmentDate());</span>
+<span class="nc" id="L28">    }</span>
+
+    public void sendConsultationComplete(Appointment appt) {
+<span class="nc" id="L31">        log.info(&quot;[NOTIFY] CONSULTATION COMPLETED → Patient: {} | Dr. {} | {}&quot;,</span>
+<span class="nc" id="L32">                appt.getPatient().getFullName(),</span>
+<span class="nc" id="L33">                appt.getDoctor().getUser().getFullName(),</span>
+<span class="nc" id="L34">                appt.getAppointmentDate());</span>
+<span class="nc" id="L35">    }</span>
+
+    // Notifies the clinic (admin) when a doctor marks a day as unavailable
+    public void sendLeaveNotification(Doctor doctor, LocalDate date, String reason) {
+<span class="nc" id="L39">        log.info(&quot;[NOTIFY] DOCTOR LEAVE → Dr. {} is unavailable on {} | Reason: {}&quot;,</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">                doctor.getUser().getFullName(), date, reason != null ? reason : &quot;Not specified&quot;);</span>
+<span class="nc" id="L41">    }</span>
+
+    // Notifies affected patients when doctor marks a leave on a day they have bookings
+    public void sendLeaveAffectedPatient(Appointment appt, String reason) {
+<span class="nc" id="L45">        log.info(&quot;[NOTIFY] LEAVE AFFECTS PATIENT → Patient: {} | Appointment {} at {} cancelled due to: {}&quot;,</span>
+<span class="nc" id="L46">                appt.getPatient().getFullName(),</span>
+<span class="nc" id="L47">                appt.getAppointmentDate(),</span>
+<span class="nc" id="L48">                appt.getAppointmentTime(),</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">                reason != null ? reason : &quot;Doctor unavailable&quot;);</span>
+<span class="nc" id="L50">    }</span>
+
+    // Notifies clinic when doctor updates their weekly schedule
+    public void sendScheduleUpdated(Doctor doctor, String dayOfWeek) {
+<span class="nc" id="L54">        log.info(&quot;[NOTIFY] SCHEDULE UPDATED → Dr. {} updated availability for {}&quot;,</span>
+<span class="nc" id="L55">                doctor.getUser().getFullName(), dayOfWeek);</span>
+<span class="nc" id="L56">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

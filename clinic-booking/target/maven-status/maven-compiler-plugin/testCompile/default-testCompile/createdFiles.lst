@@ -1,0 +1,4 @@
+com\clinic\performance\PatientAppointmentBookingPerformanceTest.class
+com\clinic\service\AppointmentServiceTest.class
+com\clinic\performance\PatientAppointmentBookingPerformanceTest$BookingSlot.class
+com\clinic\performance\PatientAppointmentBookingPerformanceTest$ResourceMonitor.class

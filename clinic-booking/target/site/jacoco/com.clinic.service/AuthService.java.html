@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Clinic Appointment Booking System</a> &gt; <a href="index.source.html" class="el_package">com.clinic.service</a> &gt; <span class="el_source">AuthService.java</span></div><h1>AuthService.java</h1><pre class="source lang-java linenums">package com.clinic.service;
+
+import com.clinic.dto.Dtos.*;
+import com.clinic.exception.AppException;
+import com.clinic.exception.NotFoundException;
+import com.clinic.model.User;
+import com.clinic.model.enums.Role;
+import com.clinic.repository.UserRepository;
+import com.clinic.security.JwtUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+<span class="fc" id="L18">@RequiredArgsConstructor</span>
+public class AuthService {
+
+    private final UserRepository userRepo;
+    private final PasswordEncoder encoder;
+    private final AuthenticationManager authManager;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
+
+    public User register(RegisterRequest req) {
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        if (userRepo.existsByEmail(req.getEmail()))</span>
+<span class="nc" id="L29">            throw new AppException(&quot;An account with this email already exists&quot;);</span>
+<span class="nc" id="L30">        return userRepo.save(new User(req.getFullName(), req.getEmail(),</span>
+<span class="nc" id="L31">                encoder.encode(req.getPassword()), req.getPhone(), Role.PATIENT));</span>
+    }
+
+    public AuthResponse login(LoginRequest req) {
+        // Let BadCredentialsException propagate — handled by GlobalExceptionHandler
+<span class="fc" id="L36">        authManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));</span>
+<span class="fc" id="L37">        var userDetails = userDetailsService.loadUserByUsername(req.getEmail());</span>
+<span class="fc" id="L38">        var user = userRepo.findByEmail(req.getEmail())</span>
+<span class="pc" id="L39">                .orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, req.getEmail()));</span>
+<span class="fc" id="L40">        return AuthResponse.of(jwtUtil.generate(userDetails), user.getRole().name(), user.getFullName());</span>
+    }
+    public AuthResponse loginBasicCredentials(String email, String password) {
+<span class="nc" id="L43">        LoginRequest req = new LoginRequest();</span>
+<span class="nc" id="L44">        req.setEmail(email);</span>
+<span class="nc" id="L45">        req.setPassword(password);</span>
+<span class="nc" id="L46">        return login(req);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
