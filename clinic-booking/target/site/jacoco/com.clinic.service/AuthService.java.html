@@ -25,10 +25,10 @@ public class AuthService {
     private final UserDetailsService userDetailsService;
 
     public User register(RegisterRequest req) {
-<span class="nc bnc" id="L28" title="All 2 branches missed.">        if (userRepo.existsByEmail(req.getEmail()))</span>
-<span class="nc" id="L29">            throw new AppException(&quot;An account with this email already exists&quot;);</span>
-<span class="nc" id="L30">        return userRepo.save(new User(req.getFullName(), req.getEmail(),</span>
-<span class="nc" id="L31">                encoder.encode(req.getPassword()), req.getPhone(), Role.PATIENT));</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (userRepo.existsByEmail(req.getEmail()))</span>
+<span class="fc" id="L29">            throw new AppException(&quot;An account with this email already exists&quot;);</span>
+<span class="fc" id="L30">        return userRepo.save(new User(req.getFullName(), req.getEmail(),</span>
+<span class="fc" id="L31">                encoder.encode(req.getPassword()), req.getPhone(), Role.PATIENT));</span>
     }
 
     public AuthResponse login(LoginRequest req) {
@@ -36,14 +36,14 @@ public class AuthService {
 <span class="fc" id="L36">        authManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));</span>
 <span class="fc" id="L37">        var userDetails = userDetailsService.loadUserByUsername(req.getEmail());</span>
 <span class="fc" id="L38">        var user = userRepo.findByEmail(req.getEmail())</span>
-<span class="pc" id="L39">                .orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, req.getEmail()));</span>
+<span class="fc" id="L39">                .orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, req.getEmail()));</span>
 <span class="fc" id="L40">        return AuthResponse.of(jwtUtil.generate(userDetails), user.getRole().name(), user.getFullName());</span>
     }
     public AuthResponse loginBasicCredentials(String email, String password) {
-<span class="nc" id="L43">        LoginRequest req = new LoginRequest();</span>
-<span class="nc" id="L44">        req.setEmail(email);</span>
-<span class="nc" id="L45">        req.setPassword(password);</span>
-<span class="nc" id="L46">        return login(req);</span>
+<span class="fc" id="L43">        LoginRequest req = new LoginRequest();</span>
+<span class="fc" id="L44">        req.setEmail(email);</span>
+<span class="fc" id="L45">        req.setPassword(password);</span>
+<span class="fc" id="L46">        return login(req);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

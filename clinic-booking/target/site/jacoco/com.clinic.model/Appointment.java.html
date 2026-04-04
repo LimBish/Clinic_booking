@@ -8,12 +8,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-<span class="pc bnc" id="L11" title="All 78 branches missed.">@Data @NoArgsConstructor</span>
+<span class="pc bpc" id="L11" title="61 of 78 branches missed.">@Data @NoArgsConstructor</span>
 @Entity @Table(name = &quot;appointments&quot;)
 public class Appointment {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-<span class="nc" id="L16">    private Long id;</span>
+<span class="fc" id="L16">    private Long id;</span>
 
     @ManyToOne @JoinColumn(name = &quot;patient_id&quot;, nullable = false)
 <span class="fc" id="L19">    private User patient;</span>

@@ -1,0 +1,6 @@
+projectKey=clinic-booking
+serverUrl=http://localhost:9000
+serverVersion=26.3.0.120487
+dashboardUrl=http://localhost:9000/dashboard?id=clinic-booking
+ceTaskId=716ff550-2a38-4e16-b4cd-df72589c3234
+ceTaskUrl=http://localhost:9000/api/ce/task?id=716ff550-2a38-4e16-b4cd-df72589c3234

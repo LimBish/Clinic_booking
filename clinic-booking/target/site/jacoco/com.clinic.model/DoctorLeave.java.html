@@ -15,17 +15,17 @@ public class DoctorLeave {
 
     @ManyToOne
     @JoinColumn(name = &quot;doctor_id&quot;, nullable = false)
-<span class="nc" id="L18">    private Doctor doctor;</span>
+<span class="fc" id="L18">    private Doctor doctor;</span>
 
     @Column(name = &quot;leave_date&quot;, nullable = false)
-<span class="nc" id="L21">    private LocalDate leaveDate;</span>
+<span class="fc" id="L21">    private LocalDate leaveDate;</span>
 
 <span class="nc" id="L23">    private String reason;</span>
 
-<span class="nc" id="L25">    public DoctorLeave(Doctor doctor, LocalDate leaveDate, String reason) {</span>
-<span class="nc" id="L26">        this.doctor = doctor;</span>
-<span class="nc" id="L27">        this.leaveDate = leaveDate;</span>
-<span class="nc" id="L28">        this.reason = reason;</span>
-<span class="nc" id="L29">    }</span>
+<span class="fc" id="L25">    public DoctorLeave(Doctor doctor, LocalDate leaveDate, String reason) {</span>
+<span class="fc" id="L26">        this.doctor = doctor;</span>
+<span class="fc" id="L27">        this.leaveDate = leaveDate;</span>
+<span class="fc" id="L28">        this.reason = reason;</span>
+<span class="fc" id="L29">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
