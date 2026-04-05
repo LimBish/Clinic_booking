@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.clinic.performance.PatientAppointmentBookingPerformanceTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 34.02 s -- in com.clinic.performance.PatientAppointmentBookingPerformanceTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 32.93 s -- in com.clinic.performance.PatientAppointmentBookingPerformanceTest

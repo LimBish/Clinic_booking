@@ -5,13 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
-<span class="pc bnc" id="L8" title="All 38 branches missed.">@Data @NoArgsConstructor</span>
+<span class="pc bpc" id="L8" title="23 of 38 branches missed.">@Data @NoArgsConstructor</span>
 @Entity @Table(name = &quot;doctor_leaves&quot;,
     uniqueConstraints = @UniqueConstraint(columnNames = {&quot;doctor_id&quot;, &quot;leave_date&quot;}))
 public class DoctorLeave {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-<span class="nc" id="L14">    private Long id;</span>
+<span class="fc" id="L14">    private Long id;</span>
 
     @ManyToOne
     @JoinColumn(name = &quot;doctor_id&quot;, nullable = false)

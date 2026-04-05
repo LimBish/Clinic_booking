@@ -6,11 +6,11 @@ import lombok.NoArgsConstructor;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-<span class="pc bnc" id="L9" title="All 54 branches missed.">@Data @NoArgsConstructor</span>
+<span class="pc bpc" id="L9" title="33 of 54 branches missed.">@Data @NoArgsConstructor</span>
 @Entity @Table(name = &quot;doctor_schedules&quot;)
 public class DoctorSchedule {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-<span class="nc" id="L13">    private Long id;</span>
+<span class="fc" id="L13">    private Long id;</span>
 
     @ManyToOne
     @JoinColumn(name = &quot;doctor_id&quot;, nullable = false)

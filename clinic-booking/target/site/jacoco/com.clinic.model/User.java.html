@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-<span class="pc bnc" id="L11" title="All 66 branches missed.">@Data @NoArgsConstructor</span>
+<span class="pc bpc" id="L11" title="39 of 66 branches missed.">@Data @NoArgsConstructor</span>
 @Entity @Table(name = &quot;users&quot;)
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +38,7 @@ public class User {
 <span class="fc" id="L38">    }</span>
     @PrePersist
     public void prePersist() {
-<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (createdAt == null) {</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (createdAt == null) {</span>
 <span class="fc" id="L42">            createdAt = LocalDateTime.now();</span>
         }
 <span class="fc" id="L44">    }</span>
