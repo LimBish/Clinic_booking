@@ -53,15 +53,13 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                dir("${APP_DIR}") {
-                    withSonarQubeEnv('SonarQube') {
-                        bat """
-                        mvn sonar:sonar ^
-                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
-                          -Dsonar.projectName=${SONAR_PROJECT_NAME} ^
-                          -Dsonar.java.binaries=target/classes
-                        """
-                    }
+                withSonarQubeEnv('SonarQube') {
+                    bat '''
+                    cd clinic-booking && mvn sonar:sonar ^
+                    -Dsonar.projectKey=clinic-booking-prod ^
+                    -Dsonar.projectName="Clinic Booking Prod" ^
+                    -Dsonar.java.binaries=target/classes
+                    '''
                 }
             }
         }
