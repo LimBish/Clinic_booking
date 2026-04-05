@@ -28,6 +28,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,7 +64,8 @@ class PatientControllerTest {
         String view = controller.dashboard(model, principal());
 
         assertEquals("patient/dashboard", view);
-        verify(model).addAttribute(any(), any());
+        verify(model).addAttribute(eq("upcoming"), any());
+        verify(model).addAttribute(eq("user"), any());
     }
 
     @Test
@@ -76,7 +78,9 @@ class PatientControllerTest {
         String view = controller.bookPage(model, "CARDIOLOGY", principal());
 
         assertEquals("patient/book", view);
-        verify(model).addAttribute(any(), any());
+        verify(model).addAttribute(eq("specializations"), any());
+        verify(model).addAttribute(eq("doctors"), any());
+        verify(model).addAttribute(eq("doctorsJson"), any());
     }
 
     @Test

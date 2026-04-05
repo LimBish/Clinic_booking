@@ -14,10 +14,10 @@ public class DoctorSchedule {
 
     @ManyToOne
     @JoinColumn(name = &quot;doctor_id&quot;, nullable = false)
-<span class="nc" id="L17">    private Doctor doctor;</span>
+<span class="fc" id="L17">    private Doctor doctor;</span>
 
     @Enumerated(EnumType.STRING)
-<span class="nc" id="L20">    private DayOfWeek dayOfWeek;</span>
+<span class="fc" id="L20">    private DayOfWeek dayOfWeek;</span>
 
 <span class="fc" id="L22">    private LocalTime startTime;</span>
 <span class="fc" id="L23">    private LocalTime endTime;</span>

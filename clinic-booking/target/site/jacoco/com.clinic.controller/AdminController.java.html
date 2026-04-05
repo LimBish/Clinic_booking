@@ -35,26 +35,26 @@ public class AdminController {
 
     @GetMapping(&quot;/dashboard&quot;)
     public String dashboard(Model model) {
-<span class="nc" id="L38">        AdminDashboardPatientStats patientStats = adminPatientService.getDashboardPatientStats();</span>
-<span class="nc" id="L39">        model.addAttribute(&quot;totalDoctors&quot;, doctorService.getAll().size());</span>
-<span class="nc" id="L40">        model.addAttribute(&quot;totalPatients&quot;, patientStats.getTotalPatients());</span>
-<span class="nc" id="L41">        model.addAttribute(&quot;newPatientsThisMonth&quot;, patientStats.getNewPatientsThisMonth());</span>
-<span class="nc" id="L42">        model.addAttribute(&quot;activePatients&quot;, patientStats.getActivePatients());</span>
-<span class="nc" id="L43">        model.addAttribute(&quot;frequentPatients&quot;, patientStats.getFrequentPatients());</span>
-<span class="nc" id="L44">        model.addAttribute(&quot;noShowPatients&quot;, patientStats.getNoShowPatients());</span>
-<span class="nc" id="L45">        model.addAttribute(&quot;mostFrequentPatients&quot;, adminPatientService.getMostFrequentPatients(5));</span>
-<span class="nc" id="L46">        model.addAttribute(&quot;noShowPatientList&quot;, adminPatientService.getNoShowPatients());</span>
-<span class="nc" id="L47">        model.addAttribute(&quot;confirmedAppointments&quot;, appointmentRepo.countByStatus(AppointmentStatus.CONFIRMED));</span>
-<span class="nc" id="L48">        model.addAttribute(&quot;completedAppointments&quot;, appointmentRepo.countByStatus(AppointmentStatus.COMPLETED));</span>
-<span class="nc" id="L49">        model.addAttribute(&quot;recentAppointments&quot;, appointmentRepo.findAll().stream()</span>
-<span class="nc" id="L50">                .sorted((a, b) -&gt; b.getAppointmentDate().compareTo(a.getAppointmentDate()))</span>
-<span class="nc" id="L51">                .limit(10).toList());</span>
-<span class="nc" id="L52">        model.addAttribute(&quot;doctorLeaves&quot;,</span>
-<span class="nc" id="L53">                leaveRepo.findAll().stream()</span>
-<span class="nc bnc" id="L54" title="All 2 branches missed.">                        .filter(l -&gt; !l.getLeaveDate().isBefore(LocalDate.now()))</span>
-<span class="nc" id="L55">                        .sorted((a, b) -&gt; a.getLeaveDate().compareTo(b.getLeaveDate()))</span>
-<span class="nc" id="L56">                        .limit(8).toList());</span>
-<span class="nc" id="L57">        return &quot;admin/dashboard&quot;;</span>
+<span class="fc" id="L38">        AdminDashboardPatientStats patientStats = adminPatientService.getDashboardPatientStats();</span>
+<span class="fc" id="L39">        model.addAttribute(&quot;totalDoctors&quot;, doctorService.getAll().size());</span>
+<span class="fc" id="L40">        model.addAttribute(&quot;totalPatients&quot;, patientStats.getTotalPatients());</span>
+<span class="fc" id="L41">        model.addAttribute(&quot;newPatientsThisMonth&quot;, patientStats.getNewPatientsThisMonth());</span>
+<span class="fc" id="L42">        model.addAttribute(&quot;activePatients&quot;, patientStats.getActivePatients());</span>
+<span class="fc" id="L43">        model.addAttribute(&quot;frequentPatients&quot;, patientStats.getFrequentPatients());</span>
+<span class="fc" id="L44">        model.addAttribute(&quot;noShowPatients&quot;, patientStats.getNoShowPatients());</span>
+<span class="fc" id="L45">        model.addAttribute(&quot;mostFrequentPatients&quot;, adminPatientService.getMostFrequentPatients(5));</span>
+<span class="fc" id="L46">        model.addAttribute(&quot;noShowPatientList&quot;, adminPatientService.getNoShowPatients());</span>
+<span class="fc" id="L47">        model.addAttribute(&quot;confirmedAppointments&quot;, appointmentRepo.countByStatus(AppointmentStatus.CONFIRMED));</span>
+<span class="fc" id="L48">        model.addAttribute(&quot;completedAppointments&quot;, appointmentRepo.countByStatus(AppointmentStatus.COMPLETED));</span>
+<span class="fc" id="L49">        model.addAttribute(&quot;recentAppointments&quot;, appointmentRepo.findAll().stream()</span>
+<span class="pc" id="L50">                .sorted((a, b) -&gt; b.getAppointmentDate().compareTo(a.getAppointmentDate()))</span>
+<span class="fc" id="L51">                .limit(10).toList());</span>
+<span class="fc" id="L52">        model.addAttribute(&quot;doctorLeaves&quot;,</span>
+<span class="fc" id="L53">                leaveRepo.findAll().stream()</span>
+<span class="pc bnc" id="L54" title="All 2 branches missed.">                        .filter(l -&gt; !l.getLeaveDate().isBefore(LocalDate.now()))</span>
+<span class="pc" id="L55">                        .sorted((a, b) -&gt; a.getLeaveDate().compareTo(b.getLeaveDate()))</span>
+<span class="fc" id="L56">                        .limit(8).toList());</span>
+<span class="fc" id="L57">        return &quot;admin/dashboard&quot;;</span>
     }
 
     @GetMapping(&quot;/patients&quot;)
@@ -63,20 +63,20 @@ public class AdminController {
                            @RequestParam(required = false) String registration,
                            @RequestParam(required = false) String appointments,
                            Model model) {
-<span class="nc" id="L66">        model.addAttribute(&quot;patients&quot;, adminPatientService.getPatients(q, status, registration, appointments));</span>
-<span class="nc" id="L67">        model.addAttribute(&quot;q&quot;, q);</span>
-<span class="nc" id="L68">        model.addAttribute(&quot;status&quot;, status);</span>
-<span class="nc" id="L69">        model.addAttribute(&quot;registration&quot;, registration);</span>
-<span class="nc" id="L70">        model.addAttribute(&quot;appointments&quot;, appointments);</span>
-<span class="nc" id="L71">        return &quot;admin/patients&quot;;</span>
+<span class="fc" id="L66">        model.addAttribute(&quot;patients&quot;, adminPatientService.getPatients(q, status, registration, appointments));</span>
+<span class="fc" id="L67">        model.addAttribute(&quot;q&quot;, q);</span>
+<span class="fc" id="L68">        model.addAttribute(&quot;status&quot;, status);</span>
+<span class="fc" id="L69">        model.addAttribute(&quot;registration&quot;, registration);</span>
+<span class="fc" id="L70">        model.addAttribute(&quot;appointments&quot;, appointments);</span>
+<span class="fc" id="L71">        return &quot;admin/patients&quot;;</span>
     }
 
     @GetMapping(&quot;/patients/{id}&quot;)
     public String patientProfile(@PathVariable Long id, Model model) {
-<span class="nc" id="L76">        User patient = adminPatientService.getPatient(id);</span>
-<span class="nc" id="L77">        model.addAttribute(&quot;patient&quot;, patient);</span>
-<span class="nc" id="L78">        model.addAttribute(&quot;appointments&quot;, adminPatientService.getPatientAppointments(id));</span>
-<span class="nc" id="L79">        return &quot;admin/patient-profile&quot;;</span>
+<span class="fc" id="L76">        User patient = adminPatientService.getPatient(id);</span>
+<span class="fc" id="L77">        model.addAttribute(&quot;patient&quot;, patient);</span>
+<span class="fc" id="L78">        model.addAttribute(&quot;appointments&quot;, adminPatientService.getPatientAppointments(id));</span>
+<span class="fc" id="L79">        return &quot;admin/patient-profile&quot;;</span>
     }
 
     @PostMapping(&quot;/patients/{id}/toggle&quot;)
@@ -84,13 +84,13 @@ public class AdminController {
                                 @RequestParam(defaultValue = &quot;patients&quot;) String back,
                                 RedirectAttributes flash) {
         try {
-<span class="nc" id="L87">            adminPatientService.togglePatient(id);</span>
-<span class="nc" id="L88">            flash.addFlashAttribute(&quot;success&quot;, &quot;Patient status updated.&quot;);</span>
+<span class="fc" id="L87">            adminPatientService.togglePatient(id);</span>
+<span class="fc" id="L88">            flash.addFlashAttribute(&quot;success&quot;, &quot;Patient status updated.&quot;);</span>
 <span class="nc" id="L89">        } catch (NotFoundException e) {</span>
 <span class="nc" id="L90">            flash.addFlashAttribute(&quot;error&quot;, e.getMessage());</span>
-<span class="nc" id="L91">        }</span>
-<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (&quot;profile&quot;.equalsIgnoreCase(back)) {</span>
-<span class="nc" id="L93">            return &quot;redirect:/admin/patients/&quot; + id;</span>
+<span class="fc" id="L91">        }</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (&quot;profile&quot;.equalsIgnoreCase(back)) {</span>
+<span class="fc" id="L93">            return &quot;redirect:/admin/patients/&quot; + id;</span>
         }
 <span class="nc" id="L95">        return &quot;redirect:/admin/patients&quot;;</span>
     }
@@ -114,10 +114,10 @@ public class AdminController {
         try {
 <span class="nc" id="L115">            doctorService.createDoctor(req);</span>
 <span class="nc" id="L116">            return &quot;redirect:/admin/doctors?created&quot;;</span>
-<span class="nc" id="L117">        } catch (AppException e) {</span>
-<span class="nc" id="L118">            model.addAttribute(&quot;error&quot;, e.getMessage());</span>
-<span class="nc" id="L119">            model.addAttribute(&quot;specializations&quot;, Specialization.values());</span>
-<span class="nc" id="L120">            return &quot;admin/doctor-form&quot;;</span>
+<span class="fc" id="L117">        } catch (AppException e) {</span>
+<span class="fc" id="L118">            model.addAttribute(&quot;error&quot;, e.getMessage());</span>
+<span class="fc" id="L119">            model.addAttribute(&quot;specializations&quot;, Specialization.values());</span>
+<span class="fc" id="L120">            return &quot;admin/doctor-form&quot;;</span>
         }
     }
 
@@ -153,25 +153,25 @@ public class AdminController {
         try {
 <span class="nc" id="L154">            doctorService.setSchedule(id, req);</span>
 <span class="nc" id="L155">            return &quot;redirect:/admin/doctors/&quot; + id + &quot;/edit?scheduled&quot;;</span>
-<span class="nc" id="L156">        } catch (AppException e) {</span>
-<span class="nc" id="L157">            model.addAttribute(&quot;error&quot;, e.getMessage());</span>
-<span class="nc" id="L158">            model.addAttribute(&quot;doctor&quot;, doctorService.getById(id));</span>
-<span class="nc" id="L159">            model.addAttribute(&quot;specializations&quot;, Specialization.values());</span>
-<span class="nc" id="L160">            model.addAttribute(&quot;schedules&quot;, doctorService.getSchedules(id));</span>
-<span class="nc" id="L161">            model.addAttribute(&quot;leaves&quot;, doctorService.getUpcomingLeaves(id));</span>
-<span class="nc" id="L162">            return &quot;admin/doctor-edit&quot;;</span>
+<span class="fc" id="L156">        } catch (AppException e) {</span>
+<span class="fc" id="L157">            model.addAttribute(&quot;error&quot;, e.getMessage());</span>
+<span class="fc" id="L158">            model.addAttribute(&quot;doctor&quot;, doctorService.getById(id));</span>
+<span class="fc" id="L159">            model.addAttribute(&quot;specializations&quot;, Specialization.values());</span>
+<span class="fc" id="L160">            model.addAttribute(&quot;schedules&quot;, doctorService.getSchedules(id));</span>
+<span class="fc" id="L161">            model.addAttribute(&quot;leaves&quot;, doctorService.getUpcomingLeaves(id));</span>
+<span class="fc" id="L162">            return &quot;admin/doctor-edit&quot;;</span>
         }
     }
 
     @PostMapping(&quot;/doctors/{id}/toggle&quot;)
     public String toggleDoctor(@PathVariable Long id, RedirectAttributes flash) {
         try {
-<span class="nc" id="L169">            doctorService.toggleActive(id);</span>
-<span class="nc" id="L170">            flash.addFlashAttribute(&quot;success&quot;, &quot;Doctor status updated.&quot;);</span>
+<span class="fc" id="L169">            doctorService.toggleActive(id);</span>
+<span class="fc" id="L170">            flash.addFlashAttribute(&quot;success&quot;, &quot;Doctor status updated.&quot;);</span>
 <span class="nc" id="L171">        } catch (NotFoundException e) {</span>
 <span class="nc" id="L172">            flash.addFlashAttribute(&quot;error&quot;, e.getMessage());</span>
-<span class="nc" id="L173">        }</span>
-<span class="nc" id="L174">        return &quot;redirect:/admin/doctors&quot;;</span>
+<span class="fc" id="L173">        }</span>
+<span class="fc" id="L174">        return &quot;redirect:/admin/doctors&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

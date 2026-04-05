@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -66,7 +67,12 @@ class DoctorControllerTest {
         String view = controller.dashboard(model, principal());
 
         assertEquals("doctor/dashboard", view);
-        verify(model).addAttribute(any(), any());
+        verify(model).addAttribute(eq("doctor"), any());
+        verify(model).addAttribute(eq("user"), any());
+        verify(model).addAttribute(eq("todayAppointments"), any());
+        verify(model).addAttribute(eq("weekAppointments"), any());
+        verify(model).addAttribute(eq("weekStart"), any());
+        verify(model).addAttribute(eq("today"), any());
     }
 
     @Test

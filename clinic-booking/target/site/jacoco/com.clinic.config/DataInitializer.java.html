@@ -17,7 +17,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        if (!userRepository.existsByEmail(&quot;admin@clinic.com&quot;)) {</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">        if (!userRepository.existsByEmail(&quot;admin@clinic.com&quot;)) {</span>
 <span class="fc" id="L21">            userRepository.save(new User(&quot;Admin&quot;, &quot;admin@clinic.com&quot;,</span>
 <span class="fc" id="L22">                    encoder.encode(&quot;admin123&quot;), null, Role.ADMIN));</span>
         }
