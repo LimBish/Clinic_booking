@@ -5,11 +5,11 @@ Clinic Appointment Booking System,com.clinic.service,DoctorService,161,326,6,18,
 Clinic Appointment Booking System,com.clinic.service,AdminPatientService,89,495,26,34,10,94,26,31,5,22
 Clinic Appointment Booking System,com.clinic.service,AppointmentService,87,485,11,39,8,96,17,30,7,15
 Clinic Appointment Booking System,com.clinic.service,NotificationService,34,112,2,2,8,22,4,6,2,6
-Clinic Appointment Booking System,com.clinic.model,Doctor,44,223,27,23,0,7,22,20,0,17
-Clinic Appointment Booking System,com.clinic.model,DoctorLeave,48,161,23,15,0,10,20,13,1,13
-Clinic Appointment Booking System,com.clinic.model,Appointment,101,303,43,35,0,11,37,25,1,22
-Clinic Appointment Booking System,com.clinic.model,User,60,315,39,29,0,19,32,25,0,23
-Clinic Appointment Booking System,com.clinic.model,DoctorSchedule,54,229,33,21,0,7,27,17,0,17
+Clinic Appointment Booking System,com.clinic.model,Doctor,40,227,24,26,0,7,20,22,0,17
+Clinic Appointment Booking System,com.clinic.model,DoctorLeave,44,165,21,17,0,10,18,15,1,13
+Clinic Appointment Booking System,com.clinic.model,Appointment,99,305,42,36,0,11,36,26,1,22
+Clinic Appointment Booking System,com.clinic.model,User,56,319,36,32,0,19,30,27,0,23
+Clinic Appointment Booking System,com.clinic.model,DoctorSchedule,50,233,31,23,0,7,25,19,0,17
 Clinic Appointment Booking System,com.clinic.dto,Dtos.ScheduleRequest,40,159,21,17,0,6,18,14,1,12
 Clinic Appointment Booking System,com.clinic.dto,Dtos,3,0,0,0,1,0,1,0,1,0
 Clinic Appointment Booking System,com.clinic.dto,Dtos.RegisterRequest,22,173,13,25,0,5,13,19,0,13

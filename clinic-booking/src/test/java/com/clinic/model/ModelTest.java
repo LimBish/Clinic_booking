@@ -25,7 +25,6 @@ class ModelTest {
     @Test
     void user_allArgConstructor_setsFields() {
         User user = new User("Alice", "alice@clinic.com", "pass123", "9876543210", Role.PATIENT);
-
         assertEquals("Alice", user.getFullName());
         assertEquals("alice@clinic.com", user.getEmail());
         assertEquals("pass123", user.getPassword());
@@ -86,6 +85,29 @@ class ModelTest {
         assertTrue(user.toString().contains("test@clinic.com"));
     }
 
+    @Test
+    void user_notEqualToNull() {
+        assertNotEquals(null, new User());
+    }
+
+    @Test
+    void user_notEqualToDifferentType() {
+        assertNotEquals("string", new User());
+    }
+
+    @Test
+    void user_sameInstance_isEqual() {
+        User u = new User();
+        assertEquals(u, u);
+    }
+
+    @Test
+    void user_notEqualWhenEmailDiffers() {
+        User a = new User(); a.setEmail("a@b.com");
+        User b = new User(); b.setEmail("c@d.com");
+        assertNotEquals(a, b);
+    }
+
     // ── Doctor ────────────────────────────────────────────────────────────────
 
     @Test
@@ -118,7 +140,6 @@ class ModelTest {
         Doctor doctor = new Doctor();
         doctor.setSpecialization(null);
         doctor.setConsultationFee(null);
-
         assertNull(doctor.getSpecialization());
         assertNull(doctor.getConsultationFee());
     }
@@ -126,12 +147,10 @@ class ModelTest {
     @Test
     void doctor_equalsAndHashCode() {
         Doctor d1 = new Doctor();
-        d1.setId(1L);
-        d1.setBio("Bio");
+        d1.setId(1L); d1.setBio("Bio");
 
         Doctor d2 = new Doctor();
-        d2.setId(1L);
-        d2.setBio("Bio");
+        d2.setId(1L); d2.setBio("Bio");
 
         assertEquals(d1, d2);
         assertEquals(d1.hashCode(), d2.hashCode());
@@ -142,6 +161,29 @@ class ModelTest {
         Doctor doctor = new Doctor();
         doctor.setBio("Neurologist");
         assertTrue(doctor.toString().contains("Neurologist"));
+    }
+
+    @Test
+    void doctor_notEqualToNull() {
+        assertNotEquals(null, new Doctor());
+    }
+
+    @Test
+    void doctor_notEqualToDifferentType() {
+        assertNotEquals("x", new Doctor());
+    }
+
+    @Test
+    void doctor_sameInstance_isEqual() {
+        Doctor d = new Doctor();
+        assertEquals(d, d);
+    }
+
+    @Test
+    void doctor_notEqualWhenBioDiffers() {
+        Doctor a = new Doctor(); a.setBio("A");
+        Doctor b = new Doctor(); b.setBio("B");
+        assertNotEquals(a, b);
     }
 
     // ── Appointment ───────────────────────────────────────────────────────────
@@ -190,7 +232,6 @@ class ModelTest {
         appt.setReason(null);
         appt.setConsultationNotes(null);
         appt.setConsultedAt(null);
-
         assertNull(appt.getReason());
         assertNull(appt.getConsultationNotes());
         assertNull(appt.getConsultedAt());
@@ -199,15 +240,29 @@ class ModelTest {
     @Test
     void appointment_equalsAndHashCode() {
         Appointment a1 = new Appointment();
-        a1.setId(1L);
-        a1.setReason("Cold");
+        a1.setId(1L); a1.setReason("Cold");
 
         Appointment a2 = new Appointment();
-        a2.setId(1L);
-        a2.setReason("Cold");
+        a2.setId(1L); a2.setReason("Cold");
 
         assertEquals(a1, a2);
         assertEquals(a1.hashCode(), a2.hashCode());
+    }
+
+    @Test
+    void appointment_notEqualToNull() {
+        assertNotEquals(null, new Appointment());
+    }
+
+    @Test
+    void appointment_notEqualToDifferentType() {
+        assertNotEquals("x", new Appointment());
+    }
+
+    @Test
+    void appointment_sameInstance_isEqual() {
+        Appointment a = new Appointment();
+        assertEquals(a, a);
     }
 
     // ── DoctorLeave ───────────────────────────────────────────────────────────
@@ -226,7 +281,6 @@ class ModelTest {
         LocalDate date = LocalDate.of(2025, 7, 4);
 
         DoctorLeave leave = new DoctorLeave(doctor, date, "Vacation");
-
         assertEquals(doctor, leave.getDoctor());
         assertEquals(date, leave.getLeaveDate());
         assertEquals("Vacation", leave.getReason());
@@ -266,6 +320,31 @@ class ModelTest {
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void doctorLeave_notEqualToNull() {
+        assertNotEquals(null, new DoctorLeave());
+    }
+
+    @Test
+    void doctorLeave_notEqualToDifferentType() {
+        assertNotEquals("x", new DoctorLeave());
+    }
+
+    @Test
+    void doctorLeave_sameInstance_isEqual() {
+        DoctorLeave l = new DoctorLeave();
+        assertEquals(l, l);
+    }
+
+    @Test
+    void doctorLeave_notEqualWhenReasonDiffers() {
+        Doctor d = new Doctor();
+        LocalDate date = LocalDate.now();
+        DoctorLeave a = new DoctorLeave(d, date, "Sick");
+        DoctorLeave b = new DoctorLeave(d, date, "Vacation");
+        assertNotEquals(a, b);
     }
 
     // ── DoctorSchedule ────────────────────────────────────────────────────────
@@ -328,19 +407,25 @@ class ModelTest {
     }
 
     @Test
-    void user_notEqualToNull() {
-        User u = new User();
-        assertNotEquals(null, u);
+    void doctorSchedule_notEqualToNull() {
+        assertNotEquals(null, new DoctorSchedule());
     }
 
     @Test
-    void user_notEqualToDifferentType() {
-        User u = new User();
-        assertNotEquals("string", u);
+    void doctorSchedule_notEqualToDifferentType() {
+        assertNotEquals("x", new DoctorSchedule());
     }
 
     @Test
-    void doctor_notEqualToNull() {
-        assertNotEquals(null, new Doctor());
+    void doctorSchedule_sameInstance_isEqual() {
+        DoctorSchedule s = new DoctorSchedule();
+        assertEquals(s, s);
+    }
+
+    @Test
+    void doctorSchedule_notEqualWhenDayDiffers() {
+        DoctorSchedule a = new DoctorSchedule(); a.setDayOfWeek(DayOfWeek.MONDAY);
+        DoctorSchedule b = new DoctorSchedule(); b.setDayOfWeek(DayOfWeek.FRIDAY);
+        assertNotEquals(a, b);
     }
 }
