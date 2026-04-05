@@ -2,15 +2,18 @@ pipeline {
     agent any
 
     tools {
-        jdk 'JDK21'
+        jdk   'JDK21'
         maven 'Maven3'
     }
 
     environment {
-        REPO_URL = "https://github.com/LimBish/Clinic_booking.git"
-        BRANCH = "main"
-        APP_DIR = "clinic-booking"
-        JAR_NAME = "clinic-booking-1.0.0.jar"
+        REPO_URL           = "https://github.com/LimBish/Clinic_booking.git"
+        APP_DIR            = "clinic-booking"
+        JAR_NAME           = "clinic-booking-1.0.0.jar"
+        SONAR_PROJECT_KEY  = "clinic-booking-prod"
+        SONAR_PROJECT_NAME = "Clinic Booking Prod"
+        DEPLOY_PATH        = "C:\\deployments\\prod"
+        PORT               = "8080"
     }
 
     triggers {
@@ -19,9 +22,10 @@ pipeline {
 
     stages {
 
-        stage('Checkout from Git') {
+        stage('Checkout') {
             steps {
-                git branch: "${BRANCH}",
+                git branch: 'main',
+                    credentialsId: 'OBS-token',
                     url: "${REPO_URL}"
             }
         }
@@ -29,28 +33,65 @@ pipeline {
         stage('Build') {
             steps {
                 dir("${APP_DIR}") {
-                    bat 'java -version'
-                    bat 'mvn -version'
                     bat 'mvn clean package -DskipTests'
                 }
             }
         }
 
-        stage('Run Application') {
+        stage('Test') {
             steps {
-                dir("${APP_DIR}/target") {
-                    bat 'start java -jar %JAR_NAME%'
+                dir("${APP_DIR}") {
+                    bat 'mvn test'
                 }
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir("${APP_DIR}") {
+                    withSonarQubeEnv('SonarQube') {
+                        bat """
+                        mvn sonar:sonar ^
+                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
+                          -Dsonar.projectName=${SONAR_PROJECT_NAME} ^
+                          -Dsonar.java.binaries=target/classes
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Deploy Prod') {
+            steps {
+                bat """
+                    if not exist ${DEPLOY_PATH} mkdir ${DEPLOY_PATH}
+                    copy /Y ${APP_DIR}\\target\\${JAR_NAME} ${DEPLOY_PATH}
+                """
+                bat """
+                    cd ${DEPLOY_PATH}
+                    taskkill /FI "WINDOWTITLE eq clinic-prod" /F || exit 0
+                    start "clinic-prod" java -jar ${JAR_NAME} --server.port=${PORT}
+                """
             }
         }
     }
 
     post {
-        success {
-            echo 'Main branch pipeline executed successfully after GitHub push.'
-        }
-        failure {
-            echo 'Main branch pipeline failed. Check console output.'
-        }
+        success  { echo "Prod pipeline passed - Build: #${env.BUILD_NUMBER}" }
+        failure  { echo "Prod pipeline failed - Build: #${env.BUILD_NUMBER}" }
+        unstable { echo "Prod pipeline unstable - deployment skipped" }
     }
 }
