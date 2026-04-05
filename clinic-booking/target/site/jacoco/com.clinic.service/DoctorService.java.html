@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DoctorService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Clinic Appointment Booking System</a> &gt; <a href="index.source.html" class="el_package">com.clinic.service</a> &gt; <span class="el_source">DoctorService.java</span></div><h1>DoctorService.java</h1><pre class="source lang-java linenums">package com.clinic.service;
+
+import com.clinic.dto.Dtos.*;
+import com.clinic.exception.AppException;
+import com.clinic.exception.NotFoundException;
+import com.clinic.model.*;
+import com.clinic.model.enums.AppointmentStatus;
+import com.clinic.model.enums.Role;
+import com.clinic.repository.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Comparator;
+import java.util.List;
+
+@Service
+<span class="fc" id="L22">@RequiredArgsConstructor</span>
+public class DoctorService {
+
+    private final DoctorRepository doctorRepo;
+    private final UserRepository userRepo;
+    private final DoctorScheduleRepository scheduleRepo;
+    private final DoctorLeaveRepository leaveRepo;
+    private final AppointmentRepository appointmentRepo;
+    private final PasswordEncoder encoder;
+    private final NotificationService notificationService;
+
+    // ── Admin operations ──────────────────────────────────────────────────────
+
+    @Transactional
+    public Doctor createDoctor(DoctorRequest req) {
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (userRepo.existsByEmail(req.getEmail()))</span>
+<span class="fc" id="L38">            throw new AppException(&quot;An account with this email already exists.&quot;);</span>
+<span class="fc" id="L39">        User user = userRepo.save(new User(req.getFullName(), req.getEmail(),</span>
+<span class="fc" id="L40">                encoder.encode(req.getPassword()), req.getPhone(), Role.DOCTOR));</span>
+<span class="fc" id="L41">        Doctor doctor = new Doctor();</span>
+<span class="fc" id="L42">        doctor.setUser(user);</span>
+<span class="fc" id="L43">        doctor.setSpecialization(req.getSpecialization());</span>
+<span class="fc" id="L44">        doctor.setBio(req.getBio());</span>
+<span class="fc" id="L45">        doctor.setConsultationFee(req.getConsultationFee());</span>
+<span class="fc" id="L46">        return doctorRepo.save(doctor);</span>
+    }
+
+    public Doctor updateDoctor(Long id, DoctorRequest req) {
+<span class="nc" id="L50">        Doctor doctor = doctorRepo.findById(id).orElseThrow(() -&gt; new NotFoundException(&quot;Doctor&quot;, id));</span>
+<span class="nc" id="L51">        doctor.setSpecialization(req.getSpecialization());</span>
+<span class="nc" id="L52">        doctor.setBio(req.getBio());</span>
+<span class="nc" id="L53">        doctor.setConsultationFee(req.getConsultationFee());</span>
+<span class="nc" id="L54">        doctor.getUser().setFullName(req.getFullName());</span>
+<span class="nc" id="L55">        doctor.getUser().setPhone(req.getPhone());</span>
+<span class="nc" id="L56">        userRepo.save(doctor.getUser());</span>
+<span class="nc" id="L57">        return doctorRepo.save(doctor);</span>
+    }
+
+    public void toggleActive(Long id) {
+<span class="pc" id="L61">        Doctor doctor = doctorRepo.findById(id).orElseThrow(() -&gt; new NotFoundException(&quot;Doctor&quot;, id));</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        doctor.setActive(!doctor.isActive());</span>
+<span class="fc" id="L63">        doctorRepo.save(doctor);</span>
+<span class="fc" id="L64">    }</span>
+
+    // ── Schedule management (doctor self-service or admin) ────────────────────
+
+    public void setSchedule(Long doctorId, ScheduleRequest req) {
+<span class="pc" id="L69">        Doctor doctor = doctorRepo.findById(doctorId).orElseThrow(() -&gt; new NotFoundException(&quot;Doctor&quot;, doctorId));</span>
+
+        DayOfWeek day;
+<span class="fc" id="L72">        try { day = DayOfWeek.valueOf(req.getDayOfWeek().toUpperCase()); }</span>
+<span class="fc" id="L73">        catch (IllegalArgumentException e) { throw new AppException(&quot;Invalid day: &quot; + req.getDayOfWeek()); }</span>
+
+<span class="fc" id="L75">        LocalTime start = LocalTime.parse(req.getStartTime());</span>
+<span class="fc" id="L76">        LocalTime end   = LocalTime.parse(req.getEndTime());</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (!end.isAfter(start))</span>
+<span class="fc" id="L78">            throw new AppException(&quot;End time must be after start time.&quot;);</span>
+
+<span class="fc" id="L80">        List&lt;DoctorSchedule&gt; daySchedules = scheduleRepo.findByDoctorIdAndDayOfWeek(doctorId, day);</span>
+<span class="fc" id="L81">        boolean overlaps = daySchedules.stream().anyMatch(existing -&gt;</span>
+<span class="pc bpc" id="L82" title="2 of 4 branches missed.">                start.isBefore(existing.getEndTime()) &amp;&amp; end.isAfter(existing.getStartTime()));</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (overlaps)</span>
+<span class="fc" id="L84">            throw new AppException(&quot;This time range overlaps with an existing schedule on &quot; + day + &quot;.&quot;);</span>
+
+<span class="fc" id="L86">        DoctorSchedule schedule = new DoctorSchedule();</span>
+<span class="fc" id="L87">        schedule.setDoctor(doctor);</span>
+<span class="fc" id="L88">        schedule.setDayOfWeek(day);</span>
+<span class="fc" id="L89">        schedule.setStartTime(start);</span>
+<span class="fc" id="L90">        schedule.setEndTime(end);</span>
+<span class="fc" id="L91">        schedule.setSlotDurationMinutes(req.getSlotDurationMinutes());</span>
+<span class="fc" id="L92">        scheduleRepo.save(schedule);</span>
+
+<span class="fc" id="L94">        notificationService.sendScheduleUpdated(doctor, day.toString());</span>
+<span class="fc" id="L95">    }</span>
+
+    public void deleteSchedule(Long doctorId, Long scheduleId) {
+<span class="nc" id="L98">        DoctorSchedule schedule = scheduleRepo.findById(scheduleId)</span>
+<span class="nc" id="L99">                .orElseThrow(() -&gt; new NotFoundException(&quot;Schedule&quot;, scheduleId));</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (!schedule.getDoctor().getId().equals(doctorId))</span>
+<span class="nc" id="L101">            throw new AppException(&quot;You can only remove your own schedule entries.&quot;);</span>
+<span class="nc" id="L102">        scheduleRepo.delete(schedule);</span>
+<span class="nc" id="L103">    }</span>
+
+    // ── Leave management (doctor marks specific dates as unavailable) ──────────
+
+    @Transactional
+    public DoctorLeave addLeave(Long doctorId, LeaveRequest req) {
+<span class="pc" id="L109">        Doctor doctor = doctorRepo.findById(doctorId).orElseThrow(() -&gt; new NotFoundException(&quot;Doctor&quot;, doctorId));</span>
+
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (req.getLeaveDate().isBefore(LocalDate.now()))</span>
+<span class="fc" id="L112">            throw new AppException(&quot;Cannot mark past dates as leave.&quot;);</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (leaveRepo.existsByDoctorIdAndLeaveDate(doctorId, req.getLeaveDate()))</span>
+<span class="fc" id="L114">            throw new AppException(&quot;You have already marked &quot; + req.getLeaveDate() + &quot; as leave.&quot;);</span>
+
+        // Auto-cancel confirmed appointments on that day and notify patients
+<span class="fc" id="L117">        List&lt;Appointment&gt; affected = appointmentRepo</span>
+<span class="fc" id="L118">                .findByDoctorIdAndAppointmentDateOrderByAppointmentTime(doctorId, req.getLeaveDate());</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        for (Appointment appt : affected) {</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">            if (appt.getStatus() == AppointmentStatus.CONFIRMED) {</span>
+<span class="fc" id="L121">                appt.setStatus(AppointmentStatus.CANCELLED);</span>
+<span class="fc" id="L122">                appointmentRepo.save(appt);</span>
+<span class="fc" id="L123">                notificationService.sendLeaveAffectedPatient(appt, req.getReason());</span>
+            }
+<span class="fc" id="L125">        }</span>
+
+<span class="fc" id="L127">        DoctorLeave leave = leaveRepo.save(new DoctorLeave(doctor, req.getLeaveDate(), req.getReason()));</span>
+<span class="fc" id="L128">        notificationService.sendLeaveNotification(doctor, req.getLeaveDate(), req.getReason());</span>
+<span class="fc" id="L129">        return leave;</span>
+    }
+
+    public void removeLeave(Long leaveId, Long doctorId) {
+<span class="pc" id="L133">        DoctorLeave leave = leaveRepo.findById(leaveId).orElseThrow(() -&gt; new NotFoundException(&quot;Leave&quot;, leaveId));</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        if (!leave.getDoctor().getId().equals(doctorId))</span>
+<span class="fc" id="L135">            throw new AppException(&quot;You can only remove your own leave entries.&quot;);</span>
+<span class="nc" id="L136">        leaveRepo.delete(leave);</span>
+<span class="nc" id="L137">    }</span>
+
+    public List&lt;DoctorLeave&gt; getUpcomingLeaves(Long doctorId) {
+<span class="nc" id="L140">        return leaveRepo.findByDoctorIdAndLeaveDateGreaterThanEqualOrderByLeaveDate(doctorId, LocalDate.now());</span>
+    }
+
+    // ── Doctor self-profile (doctor looks up their own record) ────────────────
+
+    public Doctor getDoctorByUserId(Long userId) {
+<span class="pc" id="L146">        return doctorRepo.findByUserId(userId).orElseThrow(() -&gt; new NotFoundException(&quot;Doctor profile not found&quot;));</span>
+    }
+
+    // ── General queries ───────────────────────────────────────────────────────
+
+    public Doctor getById(Long id) {
+<span class="nc" id="L152">        return doctorRepo.findById(id).orElseThrow(() -&gt; new NotFoundException(&quot;Doctor&quot;, id));</span>
+    }
+
+<span class="nc" id="L155">    public List&lt;Doctor&gt; getAllActive() { return doctorRepo.findByActiveTrue(); }</span>
+<span class="nc" id="L156">    public List&lt;Doctor&gt; getAll()       { return doctorRepo.findAll(); }</span>
+    public List&lt;DoctorSchedule&gt; getSchedules(Long doctorId) {
+<span class="nc" id="L158">        return scheduleRepo.findByDoctorId(doctorId).stream()</span>
+<span class="nc" id="L159">                .sorted(Comparator.comparing(DoctorSchedule::getDayOfWeek)</span>
+<span class="nc" id="L160">                        .thenComparing(DoctorSchedule::getStartTime))</span>
+<span class="nc" id="L161">                .toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

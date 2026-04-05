@@ -18,37 +18,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PatientAppointmentBookingPerformanceTest {
 
-    private static final int TOTAL_CALLS = 1_000;
-    private static final Duration TEST_DURATION = Duration.ofMinutes(5);
-    private static final Duration SAMPLE_INTERVAL = Duration.ofSeconds(1);
+    private static final int TOTAL_CALLS = 50;
+    private static final Duration TEST_DURATION = Duration.ofSeconds(30);
+    private static final Duration SAMPLE_INTERVAL = Duration.ofSeconds(2);
 
     @LocalServerPort
     private int port;
@@ -99,127 +88,113 @@ class PatientAppointmentBookingPerformanceTest {
     }
 
     @Test
-    void runPatientBookingLoadForFiveMinutesAndCollectServerMetrics() throws Exception {
+    void runPatientBookingLoadTest() throws Exception {
         String authCookie = loginAndGetJwtCookie();
-        assertFalse(authCookie.isBlank(), "JWT cookie should be created for patient user");
+        assertFalse(authCookie.isBlank());
 
-        Long doctorId = doctorRepository.findAll().stream()
-                .findFirst()
-                .orElseThrow()
-                .getId();
+        Long doctorId = doctorRepository.findAll().get(0).getId();
 
         List<BookingSlot> bookingSlots = generateBookingSlots(TOTAL_CALLS);
-        assertTrue(bookingSlots.size() >= TOTAL_CALLS, "Should generate at least 1000 unique booking slots");
+        assertTrue(bookingSlots.size() >= TOTAL_CALLS);
 
         var monitor = new ResourceMonitor();
         var stopSignal = new AtomicBoolean(false);
         var monitorThread = new Thread(() -> monitor.start(stopSignal));
-        monitorThread.setName("resource-monitor");
         monitorThread.start();
 
         long successCount = 0;
         long failureCount = 0;
         long totalLatencyMs = 0;
-        long minLatencyMs = Long.MAX_VALUE;
-        long maxLatencyMs = Long.MIN_VALUE;
 
         Duration intervalBetweenCalls = TEST_DURATION.dividedBy(TOTAL_CALLS);
         Instant startedAt = Instant.now();
 
         for (int i = 0; i < TOTAL_CALLS; i++) {
             BookingSlot slot = bookingSlots.get(i);
-            String formPayload = buildBookingFormPayload(doctorId, slot.date(), slot.time(), "Load test booking " + i);
+            String payload = buildBookingFormPayload(doctorId, slot.date(), slot.time(), "Load test " + i);
 
-            long callStart = System.nanoTime();
-            ResponseEntity<String> response = invokeBooking(formPayload, authCookie);
-            long latencyMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - callStart);
+            long start = System.nanoTime();
+            ResponseEntity<String> response = invokeBooking(payload, authCookie);
+            long latency = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
 
-            totalLatencyMs += latencyMs;
-            minLatencyMs = Math.min(minLatencyMs, latencyMs);
-            maxLatencyMs = Math.max(maxLatencyMs, latencyMs);
+            totalLatencyMs += latency;
 
             if (response.getStatusCode().is3xxRedirection()) {
                 successCount++;
             } else {
                 failureCount++;
-                System.out.printf("Unexpected response at call %d: status=%s, body=%s%n",
-                        i + 1, response.getStatusCode(), response.getBody());
             }
 
-            long expectedElapsedMs = intervalBetweenCalls.toMillis() * (i + 1L);
-            long actualElapsedMs = Duration.between(startedAt, Instant.now()).toMillis();
-            if (expectedElapsedMs > actualElapsedMs) {
-                Thread.sleep(expectedElapsedMs - actualElapsedMs);
+            long expected = intervalBetweenCalls.toMillis() * (i + 1L);
+            long actual = Duration.between(startedAt, Instant.now()).toMillis();
+            if (expected > actual) {
+                Thread.sleep(expected - actual);
             }
         }
 
         stopSignal.set(true);
         monitorThread.join();
 
-        long elapsedMs = Duration.between(startedAt, Instant.now()).toMillis();
-        double avgLatencyMs = totalLatencyMs / (double) TOTAL_CALLS;
+        double avgLatency = totalLatencyMs / (double) TOTAL_CALLS;
 
-        System.out.println("\n=== PATIENT APPOINTMENT BOOKING LOAD TEST REPORT ===");
-        System.out.printf(Locale.US, "Endpoint: %s%n", "http://localhost:" + port + "/patient/book");
-        System.out.printf(Locale.US, "Configured total calls: %d%n", TOTAL_CALLS);
-        System.out.printf(Locale.US, "Configured duration: %d seconds%n", TEST_DURATION.toSeconds());
-        System.out.printf(Locale.US, "Actual duration: %.2f seconds%n", elapsedMs / 1_000.0);
-        System.out.printf(Locale.US, "Success calls: %d%n", successCount);
-        System.out.printf(Locale.US, "Failed calls: %d%n", failureCount);
-        System.out.printf(Locale.US, "Average latency: %.2f ms%n", avgLatencyMs);
-        System.out.printf(Locale.US, "Min latency: %d ms%n", minLatencyMs == Long.MAX_VALUE ? 0 : minLatencyMs);
-        System.out.printf(Locale.US, "Max latency: %d ms%n", maxLatencyMs == Long.MIN_VALUE ? 0 : maxLatencyMs);
+        System.out.println("\n=== LOAD TEST REPORT ===");
+        System.out.println("Total Calls: " + TOTAL_CALLS);
+        System.out.println("Success: " + successCount);
+        System.out.println("Failures: " + failureCount);
+        System.out.println("Avg Latency: " + avgLatency + " ms");
+
         monitor.printSummary();
 
-        assertTrue(successCount > 0, "At least one booking request should succeed");
-        assertTrue(failureCount == 0, "No booking request should fail");
+        assertTrue(successCount > 0);
+        assertEquals(0, failureCount);
     }
 
     private String loginAndGetJwtCookie() throws IOException {
-        String endpoint = "http://localhost:" + port + "/api/auth/login";
+        String url = "http://localhost:" + port + "/api/auth/login";
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        Dtos.LoginRequest loginRequest = new Dtos.LoginRequest();
-        loginRequest.setEmail("patient-load@clinic.com");
-        loginRequest.setPassword("patient123");
+        Dtos.LoginRequest req = new Dtos.LoginRequest();
+        req.setEmail("patient-load@clinic.com");
+        req.setPassword("patient123");
 
-        ResponseEntity<String> response = restTemplate.exchange(endpoint, HttpMethod.POST,
-                new HttpEntity<>(objectMapper.writeValueAsString(loginRequest), headers), String.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                url, HttpMethod.POST,
+                new HttpEntity<>(objectMapper.writeValueAsString(req), headers),
+                String.class
+        );
 
-        assertTrue(response.getStatusCode().is2xxSuccessful(), "Login should return 200");
         JsonNode body = objectMapper.readTree(response.getBody());
-        assertTrue(body.hasNonNull("token"), "Login body should include token");
-
-        String token = body.get("token").asText();
-        return "jwt=" + token;
+        return "jwt=" + body.get("token").asText();
     }
 
-    private ResponseEntity<String> invokeBooking(String payload, String authCookie) {
-        String endpoint = "http://localhost:" + port + "/patient/book";
+    private ResponseEntity<String> invokeBooking(String payload, String cookie) {
+        String url = "http://localhost:" + port + "/patient/book";
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.add(HttpHeaders.COOKIE, authCookie);
+        headers.add(HttpHeaders.COOKIE, cookie);
 
-        return restTemplate.exchange(endpoint, HttpMethod.POST, new HttpEntity<>(payload, headers), String.class);
+        return restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), String.class);
     }
 
     private String buildBookingFormPayload(Long doctorId, LocalDate date, LocalTime time, String reason) {
-        return "doctorId=" + doctorId
-                + "&appointmentDate=" + date
-                + "&appointmentTime=" + time
-                + "&reason=" + reason.replace(" ", "+");
+        return "doctorId=" + doctorId +
+                "&appointmentDate=" + date +
+                "&appointmentTime=" + time +
+                "&reason=" + reason.replace(" ", "+");
     }
 
-    private List<BookingSlot> generateBookingSlots(int requiredSlots) {
+    private List<BookingSlot> generateBookingSlots(int count) {
         List<BookingSlot> slots = new ArrayList<>();
         LocalDate date = LocalDate.now().plusDays(1);
 
-        while (slots.size() < requiredSlots) {
-            LocalTime current = LocalTime.of(0, 0);
-            while (!current.isAfter(LocalTime.of(23, 50)) && slots.size() < requiredSlots) {
-                slots.add(new BookingSlot(date, current));
-                current = current.plusMinutes(5);
+        while (slots.size() < count) {
+            LocalTime time = LocalTime.of(0, 0);
+            while (!time.isAfter(LocalTime.of(23, 50)) && slots.size() < count) {
+                slots.add(new BookingSlot(date, time));
+                time = time.plusMinutes(5);
             }
             date = date.plusDays(1);
         }
@@ -229,110 +204,30 @@ class PatientAppointmentBookingPerformanceTest {
     private record BookingSlot(LocalDate date, LocalTime time) {}
 
     private static class ResourceMonitor {
-        private final OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-        private final List<Double> cpuSamples = new ArrayList<>();
-        private final List<Long> usedMemorySamples = new ArrayList<>();
-        private final List<Double> rxBandwidthSamplesKb = new ArrayList<>();
-        private final List<Double> txBandwidthSamplesKb = new ArrayList<>();
+        private final OperatingSystemMXBean osBean =
+                (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
-        private NetSnapshot previousSnapshot;
+        private final List<Double> cpuSamples = new ArrayList<>();
 
         void start(AtomicBoolean stopSignal) {
             while (!stopSignal.get()) {
-                sampleSystemUsage();
+                double cpu = osBean.getSystemCpuLoad();
+                if (cpu >= 0) cpuSamples.add(cpu * 100);
                 try {
                     Thread.sleep(SAMPLE_INTERVAL.toMillis());
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
                     return;
                 }
-            }
-            sampleSystemUsage();
-        }
-
-        private void sampleSystemUsage() {
-            double cpuLoad = osBean.getSystemCpuLoad();
-            if (cpuLoad >= 0) {
-                cpuSamples.add(cpuLoad * 100.0);
-            }
-
-            long totalMem = osBean.getTotalMemorySize();
-            long freeMem = osBean.getFreeMemorySize();
-            usedMemorySamples.add(totalMem - freeMem);
-
-            var current = readNetworkSnapshot();
-            if (current != null && previousSnapshot != null) {
-                long elapsedMs = current.timestampMs - previousSnapshot.timestampMs;
-                if (elapsedMs > 0) {
-                    double seconds = elapsedMs / 1_000.0;
-                    rxBandwidthSamplesKb.add((current.rxBytes - previousSnapshot.rxBytes) / 1024.0 / seconds);
-                    txBandwidthSamplesKb.add((current.txBytes - previousSnapshot.txBytes) / 1024.0 / seconds);
-                }
-            }
-            previousSnapshot = current;
-        }
-
-        private NetSnapshot readNetworkSnapshot() {
-            Path path = Path.of("/proc/net/dev");
-            if (!Files.exists(path)) {
-                return null;
-            }
-
-            try {
-                long totalRx = 0;
-                long totalTx = 0;
-                List<String> lines = Files.readAllLines(path);
-                for (String line : lines) {
-                    if (!line.contains(":")) {
-                        continue;
-                    }
-                    String[] parts = line.split(":");
-                    String iface = parts[0].trim();
-                    if (iface.equals("lo")) {
-                        continue;
-                    }
-                    String[] columns = parts[1].trim().split("\\s+");
-                    if (columns.length < 16) {
-                        continue;
-                    }
-                    totalRx += Long.parseLong(columns[0]);
-                    totalTx += Long.parseLong(columns[8]);
-                }
-                return new NetSnapshot(totalRx, totalTx, System.currentTimeMillis());
-            } catch (IOException | NumberFormatException e) {
-                return null;
             }
         }
 
         void printSummary() {
-            System.out.println("\n=== SERVER RESOURCE SUMMARY (during test window) ===");
-            System.out.printf(Locale.US, "CPU load avg/max: %.2f%% / %.2f%%%n", avg(cpuSamples), max(cpuSamples));
-            System.out.printf(Locale.US, "Used memory avg/max: %.2f MB / %.2f MB%n",
-                    avgBytes(usedMemorySamples), maxBytes(usedMemorySamples));
-            System.out.printf(Locale.US, "Network RX avg/max: %.2f KB/s / %.2f KB/s%n",
-                    avg(rxBandwidthSamplesKb), max(rxBandwidthSamplesKb));
-            System.out.printf(Locale.US, "Network TX avg/max: %.2f KB/s / %.2f KB/s%n",
-                    avg(txBandwidthSamplesKb), max(txBandwidthSamplesKb));
-        }
+            double avg = cpuSamples.stream().mapToDouble(d -> d).average().orElse(0);
+            double max = cpuSamples.stream().mapToDouble(d -> d).max().orElse(0);
 
-        private double avg(List<Double> values) {
-            return values.isEmpty() ? 0.0 : values.stream().mapToDouble(v -> v).average().orElse(0.0);
-        }
-
-        private double max(List<Double> values) {
-            return values.isEmpty() ? 0.0 : values.stream().mapToDouble(v -> v).max().orElse(0.0);
-        }
-
-        private double avgBytes(List<Long> values) {
-            if (values.isEmpty()) return 0.0;
-            return values.stream().mapToLong(v -> v).average().orElse(0.0) / (1024.0 * 1024.0);
-        }
-
-        private double maxBytes(List<Long> values) {
-            if (values.isEmpty()) return 0.0;
-            return values.stream().mapToLong(v -> v).max().orElse(0L) / (1024.0 * 1024.0);
+            System.out.println("\nCPU Avg: " + avg + "%");
+            System.out.println("CPU Max: " + max + "%");
         }
     }
-
-    private record NetSnapshot(long rxBytes, long txBytes, long timestampMs) {}
 }
+

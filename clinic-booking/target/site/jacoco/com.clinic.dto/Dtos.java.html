@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Dtos.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Clinic Appointment Booking System</a> &gt; <a href="index.source.html" class="el_package">com.clinic.dto</a> &gt; <span class="el_source">Dtos.java</span></div><h1>Dtos.java</h1><pre class="source lang-java linenums">package com.clinic.dto;
+
+import com.clinic.model.enums.Specialization;
+import jakarta.validation.constraints.*;
+import lombok.Data;
+import java.time.LocalDate;
+
+<span class="nc" id="L8">public class Dtos {</span>
+
+<span class="pc bpc" id="L10" title="13 of 38 branches missed.">    @Data</span>
+    public static class RegisterRequest {
+<span class="fc" id="L12">        @NotBlank String fullName;</span>
+<span class="fc" id="L13">        @Email @NotBlank String email;</span>
+<span class="fc" id="L14">        @NotBlank @Size(min = 6) String password;</span>
+<span class="fc" id="L15">        String phone;</span>
+    }
+
+<span class="pc bpc" id="L18" title="11 of 22 branches missed.">    @Data</span>
+    public static class LoginRequest {
+<span class="fc" id="L20">        @Email @NotBlank String email;</span>
+<span class="fc" id="L21">        @NotBlank String password;</span>
+    }
+
+<span class="pc bpc" id="L24" title="14 of 30 branches missed.">    @Data</span>
+    public static class AuthResponse {
+<span class="fc" id="L26">        String token;</span>
+<span class="fc" id="L27">        String role;</span>
+<span class="fc" id="L28">        String name;</span>
+<span class="fc" id="L29">        AuthResponse(String token, String role, String name) {</span>
+<span class="fc" id="L30">            this.token = token; this.role = role; this.name = name;</span>
+<span class="fc" id="L31">        }</span>
+<span class="fc" id="L32">        public static AuthResponse of(String t, String r, String n) { return new AuthResponse(t, r, n); }</span>
+    }
+
+<span class="pc bpc" id="L35" title="18 of 38 branches missed.">    @Data</span>
+    public static class AppointmentRequest {
+<span class="fc" id="L37">        @NotNull Long doctorId;</span>
+<span class="fc" id="L38">        @NotNull LocalDate appointmentDate;</span>
+<span class="fc" id="L39">        @NotBlank String appointmentTime;</span>
+<span class="fc" id="L40">        String reason;</span>
+    }
+
+<span class="pc bpc" id="L43" title="6 of 14 branches missed.">    @Data</span>
+    public static class ConsultationRequest {
+        @NotBlank(message = &quot;Consultation notes are required&quot;)
+<span class="fc" id="L46">        String consultationNotes;</span>
+    }
+
+<span class="pc bpc" id="L49" title="34 of 62 branches missed.">    @Data</span>
+    public static class DoctorRequest {
+<span class="fc" id="L51">        @NotBlank String fullName;</span>
+<span class="fc" id="L52">        @Email @NotBlank String email;</span>
+<span class="fc" id="L53">        @NotBlank String password;</span>
+<span class="fc" id="L54">        String phone;</span>
+<span class="fc" id="L55">        Specialization specialization;</span>
+<span class="fc" id="L56">        String bio;</span>
+<span class="fc" id="L57">        Integer consultationFee;</span>
+    }
+
+<span class="pc bpc" id="L60" title="21 of 38 branches missed.">    @Data</span>
+    public static class ScheduleRequest {
+<span class="fc" id="L62">        @NotBlank String dayOfWeek;</span>
+<span class="fc" id="L63">        @NotBlank String startTime;</span>
+<span class="fc" id="L64">        @NotBlank String endTime;</span>
+<span class="fc" id="L65">        @NotNull</span>
+        @Positive
+<span class="fc" id="L67">        Integer slotDurationMinutes = 30;</span>
+    }
+
+<span class="pc bpc" id="L70" title="29 of 58 branches missed.">    @Data</span>
+    public static class AdminPatientRow {
+<span class="fc" id="L72">        Long id;</span>
+<span class="fc" id="L73">        String fullName;</span>
+<span class="fc" id="L74">        String email;</span>
+<span class="fc" id="L75">        LocalDate registrationDate;</span>
+<span class="fc" id="L76">        boolean enabled;</span>
+<span class="fc" id="L77">        Long appointmentCount;</span>
+<span class="fc" id="L78">        String bookedDoctors;</span>
+
+        public static AdminPatientRow of(Long id, String fullName, String email, LocalDate registrationDate,
+                                         boolean enabled, Long appointmentCount, String bookedDoctors) {
+<span class="fc" id="L82">            AdminPatientRow row = new AdminPatientRow();</span>
+<span class="fc" id="L83">            row.setId(id);</span>
+<span class="fc" id="L84">            row.setFullName(fullName);</span>
+<span class="fc" id="L85">            row.setEmail(email);</span>
+<span class="fc" id="L86">            row.setRegistrationDate(registrationDate);</span>
+<span class="fc" id="L87">            row.setEnabled(enabled);</span>
+<span class="fc" id="L88">            row.setAppointmentCount(appointmentCount);</span>
+<span class="fc" id="L89">            row.setBookedDoctors(bookedDoctors);</span>
+<span class="fc" id="L90">            return row;</span>
+        }
+    }
+
+<span class="pc bpc" id="L94" title="6 of 16 branches missed.">    @Data</span>
+    public static class AdminDashboardPatientStats {
+<span class="fc" id="L96">        long totalPatients;</span>
+<span class="fc" id="L97">        long newPatientsThisMonth;</span>
+<span class="fc" id="L98">        long activePatients;</span>
+<span class="fc" id="L99">        long frequentPatients;</span>
+<span class="fc" id="L100">        long noShowPatients;</span>
+    }
+
+
+<span class="pc bpc" id="L104" title="8 of 22 branches missed.">    @Data</span>
+    public static class LeaveRequest {
+        @NotNull(message = &quot;Leave date is required&quot;)
+<span class="fc" id="L107">        LocalDate leaveDate;</span>
+<span class="fc" id="L108">        String reason;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

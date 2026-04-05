@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppointmentService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Clinic Appointment Booking System</a> &gt; <a href="index.source.html" class="el_package">com.clinic.service</a> &gt; <span class="el_source">AppointmentService.java</span></div><h1>AppointmentService.java</h1><pre class="source lang-java linenums">package com.clinic.service;
+
+import com.clinic.dto.Dtos.AppointmentRequest;
+import com.clinic.dto.Dtos.ConsultationRequest;
+import com.clinic.exception.AppException;
+import com.clinic.exception.NotFoundException;
+import com.clinic.model.Appointment;
+import com.clinic.model.Doctor;
+import com.clinic.model.DoctorSchedule;
+import com.clinic.model.User;
+import com.clinic.model.enums.AppointmentStatus;
+import com.clinic.repository.AppointmentRepository;
+import com.clinic.repository.DoctorLeaveRepository;
+import com.clinic.repository.DoctorRepository;
+import com.clinic.repository.DoctorScheduleRepository;
+import com.clinic.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+@Service
+<span class="fc" id="L29">@RequiredArgsConstructor</span>
+public class AppointmentService {
+
+    private final AppointmentRepository appointmentRepo;
+    private final DoctorRepository doctorRepo;
+    private final DoctorScheduleRepository scheduleRepo;
+    private final DoctorLeaveRepository leaveRepo;
+    private final UserRepository userRepo;
+    private final NotificationService notificationService;
+
+    public Appointment book(String patientEmail, AppointmentRequest req) {
+<span class="fc" id="L40">        User patient = userRepo.findByEmail(patientEmail)</span>
+<span class="fc" id="L41">                .orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, patientEmail));</span>
+<span class="fc" id="L42">        Doctor doctor = doctorRepo.findById(req.getDoctorId())</span>
+<span class="fc" id="L43">                .orElseThrow(() -&gt; new NotFoundException(&quot;Doctor&quot;, req.getDoctorId()));</span>
+
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        if (!doctor.isActive())</span>
+<span class="nc" id="L46">            throw new AppException(&quot;This doctor is currently not accepting appointments.&quot;);</span>
+
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (req.getAppointmentDate().isBefore(LocalDate.now()))</span>
+<span class="fc" id="L49">            throw new AppException(&quot;Appointment date cannot be in the past.&quot;);</span>
+
+        // Check doctor has a weekly schedule for that day
+//        DoctorSchedule schedule = scheduleRepo
+//                .findByDoctorIdAndDayOfWeek(doctor.getId(), req.getAppointmentDate().getDayOfWeek())
+//                .orElseThrow(() -&gt; new AppException(
+//                    &quot;Dr. &quot; + doctor.getUser().getFullName() + &quot; is not available on &quot;
+<span class="fc" id="L56">        List&lt;DoctorSchedule&gt; schedules = scheduleRepo</span>
+<span class="fc" id="L57">                .findByDoctorIdAndDayOfWeek(doctor.getId(), req.getAppointmentDate().getDayOfWeek());</span>
+
+//        BUG
+//        if (schedules.isEmpty())
+//            throw new AppException(
+//                    + req.getAppointmentDate().getDayOfWeek().toString().charAt(0)
+//                    + req.getAppointmentDate().getDayOfWeek().toString().substring(1).toLowerCase() + &quot;s.&quot;);
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (schedules.isEmpty()) {</span>
+<span class="fc" id="L66">            String dayName = req.getAppointmentDate().getDayOfWeek().toString();</span>
+<span class="fc" id="L67">            String readableDay = dayName.charAt(0) + dayName.substring(1).toLowerCase();</span>
+<span class="fc" id="L68">            throw new AppException(doctor.getUser().getFullName() + &quot; is not available on &quot; + readableDay + &quot;s.&quot;);</span>
+        }
+
+//        if (schedules.isEmpty()) {
+//            String day = req.getAppointmentDate()
+//                    .getDayOfWeek()
+//                    .getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+//            throw new AppException(day + &quot;s.&quot;);
+//        }
+
+        // Check doctor has not marked that specific date as leave
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (leaveRepo.existsByDoctorIdAndLeaveDate(doctor.getId(), req.getAppointmentDate()))</span>
+<span class="fc" id="L80">            throw new AppException(&quot;Dr. &quot; + doctor.getUser().getFullName()</span>
+<span class="fc" id="L81">                    + &quot; is on leave on &quot; + req.getAppointmentDate() + &quot;. Please choose another date.&quot;);</span>
+
+<span class="fc" id="L83">        LocalTime time = LocalTime.parse(req.getAppointmentTime());</span>
+
+//        // Validate time is within schedule and aligns with slot duration
+//        LocalTime slotEnd = time.plusMinutes(schedule.getSlotDurationMinutes());
+//        if (time.isBefore(schedule.getStartTime()) || !slotEnd.isAfter(time) || slotEnd.isAfter(schedule.getEndTime()))
+//            throw new AppException(&quot;Selected time is outside of the doctor's working hours.&quot;);
+
+        // Validate time falls in at least one schedule window and aligns with that slot duration
+<span class="fc" id="L91">        DoctorSchedule matchingSchedule = schedules.stream()</span>
+<span class="fc" id="L92">                .filter(schedule -&gt; {</span>
+<span class="fc" id="L93">                    LocalTime slotEnd = time.plusMinutes(schedule.getSlotDurationMinutes());</span>
+<span class="pc bpc" id="L94" title="3 of 6 branches missed.">                    if (time.isBefore(schedule.getStartTime()) || !slotEnd.isAfter(time) || slotEnd.isAfter(schedule.getEndTime()))</span>
+<span class="nc" id="L95">                        return false;</span>
+<span class="fc" id="L96">                    long minutesFromStart = java.time.Duration.between(schedule.getStartTime(), time).toMinutes();</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">                    return minutesFromStart % schedule.getSlotDurationMinutes() == 0;</span>
+                })
+<span class="fc" id="L99">                .findFirst()</span>
+<span class="fc" id="L100">                .orElse(null);</span>
+
+//        long minutesFromStart = java.time.Duration.between(schedule.getStartTime(), time).toMinutes();
+//        if (minutesFromStart % schedule.getSlotDurationMinutes() != 0)
+//            throw new AppException(&quot;Selected time does not align with the doctor's slot schedule.&quot;);
+
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (matchingSchedule == null)</span>
+<span class="fc" id="L107">            throw new AppException(&quot;Selected time is outside of the doctor's working hours or does not match slot intervals.&quot;);</span>
+
+
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (isSlotTaken(doctor.getId(), req.getAppointmentDate(), time))</span>
+<span class="fc" id="L111">            throw new AppException(&quot;This time slot is already booked. Please choose another.&quot;);</span>
+
+<span class="fc" id="L113">        Appointment appt = new Appointment();</span>
+<span class="fc" id="L114">        appt.setPatient(patient);</span>
+<span class="fc" id="L115">        appt.setDoctor(doctor);</span>
+<span class="fc" id="L116">        appt.setAppointmentDate(req.getAppointmentDate());</span>
+<span class="fc" id="L117">        appt.setAppointmentTime(time);</span>
+<span class="fc" id="L118">        appt.setReason(req.getReason());</span>
+<span class="fc" id="L119">        appt.setStatus(AppointmentStatus.CONFIRMED);</span>
+
+<span class="fc" id="L121">        Appointment saved = appointmentRepo.save(appt);</span>
+<span class="fc" id="L122">        notificationService.sendConfirmation(saved);</span>
+<span class="fc" id="L123">        return saved;</span>
+    }
+
+    /**
+     * Returns available time slots for a doctor on a given date.
+     * Respects: weekly schedule, leaves, already-booked slots, past times.
+     */
+    public List&lt;String&gt; getAvailableSlots(Long doctorId, LocalDate date) {
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (date.isBefore(LocalDate.now())) return List.of();</span>
+
+        // Doctor on leave that day?
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        if (leaveRepo.existsByDoctorIdAndLeaveDate(doctorId, date)) return List.of();</span>
+
+<span class="fc" id="L136">        List&lt;DoctorSchedule&gt; schedules = scheduleRepo</span>
+<span class="fc" id="L137">                .findByDoctorIdAndDayOfWeek(doctorId, date.getDayOfWeek());</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        if (schedules.isEmpty()) return List.of();</span>
+
+<span class="fc" id="L140">        List&lt;String&gt; slots = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L141">        LocalTime now = LocalTime.now();</span>
+
+<span class="fc bfc" id="L143" title="All 2 branches covered.">        for (DoctorSchedule schedule : schedules) {</span>
+<span class="fc" id="L144">            LocalTime current = schedule.getStartTime();</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">            while (current.isBefore(schedule.getEndTime())) {</span>
+                // Skip past slots for today
+<span class="pc bpc" id="L147" title="3 of 4 branches missed.">                boolean isPast = date.equals(LocalDate.now()) &amp;&amp; current.isBefore(now);</span>
+<span class="pc bpc" id="L148" title="1 of 4 branches missed.">                if (!isPast &amp;&amp; !isSlotTaken(doctorId, date, current))</span>
+<span class="fc" id="L149">                    slots.add(current.toString());</span>
+<span class="fc" id="L150">                current = current.plusMinutes(schedule.getSlotDurationMinutes());</span>
+<span class="fc" id="L151">            }</span>
+<span class="fc" id="L152">        }</span>
+<span class="fc" id="L153">        return slots;</span>
+    }
+
+    /** Doctor marks appointment as consulted and adds notes */
+    public Appointment complete(Long appointmentId, String doctorEmail, ConsultationRequest req) {
+<span class="fc" id="L158">        Appointment appt = appointmentRepo.findById(appointmentId)</span>
+<span class="pc" id="L159">                .orElseThrow(() -&gt; new NotFoundException(&quot;Appointment&quot;, appointmentId));</span>
+
+        // Verify it belongs to this doctor
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        if (!appt.getDoctor().getUser().getEmail().equals(doctorEmail))</span>
+<span class="fc" id="L163">            throw new AppException(&quot;You can only update your own appointments.&quot;);</span>
+
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (appt.getStatus() == AppointmentStatus.CANCELLED)</span>
+<span class="fc" id="L166">            throw new AppException(&quot;Cannot mark a cancelled appointment as consulted.&quot;);</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        if (appt.getStatus() == AppointmentStatus.COMPLETED)</span>
+<span class="nc" id="L168">            throw new AppException(&quot;This appointment is already marked as completed.&quot;);</span>
+
+<span class="fc" id="L170">        appt.setStatus(AppointmentStatus.COMPLETED);</span>
+<span class="fc" id="L171">        appt.setConsultationNotes(req.getConsultationNotes());</span>
+<span class="fc" id="L172">        appt.setConsultedAt(LocalDateTime.now());</span>
+
+<span class="fc" id="L174">        Appointment saved = appointmentRepo.save(appt);</span>
+<span class="fc" id="L175">        notificationService.sendConsultationComplete(saved);</span>
+<span class="fc" id="L176">        return saved;</span>
+    }
+
+    public Appointment cancel(Long appointmentId, String patientEmail) {
+<span class="fc" id="L180">        Appointment appt = appointmentRepo.findById(appointmentId)</span>
+<span class="pc" id="L181">                .orElseThrow(() -&gt; new NotFoundException(&quot;Appointment&quot;, appointmentId));</span>
+<span class="fc" id="L182">        validatePatientOwnership(appt, patientEmail);</span>
+
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        if (appt.getStatus() == AppointmentStatus.CANCELLED)</span>
+<span class="nc" id="L185">            throw new AppException(&quot;Appointment is already cancelled.&quot;);</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        if (appt.getStatus() == AppointmentStatus.COMPLETED)</span>
+<span class="fc" id="L187">            throw new AppException(&quot;Completed appointments cannot be cancelled.&quot;);</span>
+
+<span class="fc" id="L189">        appt.setStatus(AppointmentStatus.CANCELLED);</span>
+<span class="fc" id="L190">        Appointment saved = appointmentRepo.save(appt);</span>
+<span class="fc" id="L191">        notificationService.sendCancellation(saved);</span>
+<span class="fc" id="L192">        return saved;</span>
+    }
+
+    public List&lt;Appointment&gt; getPatientHistory(String email) {
+<span class="pc" id="L196">        User patient = userRepo.findByEmail(email).orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, email));</span>
+<span class="nc" id="L197">        return appointmentRepo.findByPatientIdOrderByAppointmentDateDescAppointmentTimeDesc(patient.getId());</span>
+    }
+
+    public List&lt;Appointment&gt; getPatientUpcoming(String email) {
+<span class="nc" id="L201">        User patient = userRepo.findByEmail(email).orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, email));</span>
+<span class="nc" id="L202">        return appointmentRepo.findByPatientIdAndStatusIn(patient.getId(),</span>
+<span class="nc" id="L203">                List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING));</span>
+    }
+
+    /** Doctor: today's appointments */
+    public List&lt;Appointment&gt; getDoctorTodayAppointments(String email) {
+<span class="fc" id="L208">        Doctor doctor = getDoctorByEmail(email);</span>
+<span class="fc" id="L209">        return appointmentRepo.findByDoctorIdAndAppointmentDateOrderByAppointmentTime(</span>
+<span class="fc" id="L210">                doctor.getId(), LocalDate.now());</span>
+    }
+
+    /** Doctor: appointments for a specific date */
+    public List&lt;Appointment&gt; getDoctorAppointmentsForDate(String email, LocalDate date) {
+<span class="fc" id="L215">        Doctor doctor = getDoctorByEmail(email);</span>
+<span class="fc" id="L216">        return appointmentRepo.findByDoctorIdAndAppointmentDateOrderByAppointmentTime(doctor.getId(), date);</span>
+    }
+
+    /** Doctor: appointments for the current week (Mon–Sun) */
+    public List&lt;Appointment&gt; getDoctorWeekAppointments(String email, LocalDate weekStart) {
+<span class="fc" id="L221">        Doctor doctor = getDoctorByEmail(email);</span>
+<span class="fc" id="L222">        return appointmentRepo.findByDoctorIdAndAppointmentDateBetweenOrderByAppointmentDateAscAppointmentTimeAsc(</span>
+<span class="fc" id="L223">                doctor.getId(), weekStart, weekStart.plusDays(6));</span>
+    }
+
+    private Doctor getDoctorByEmail(String email) {
+<span class="pc" id="L227">        User user = userRepo.findByEmail(email).orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, email));</span>
+<span class="fc" id="L228">        return doctorRepo.findByUserId(user.getId())</span>
+<span class="pc" id="L229">                .orElseThrow(() -&gt; new NotFoundException(&quot;Doctor profile not found&quot;));</span>
+    }
+
+    private boolean isSlotTaken(Long doctorId, LocalDate date, LocalTime time) {
+<span class="fc" id="L233">        return appointmentRepo.existsByDoctorIdAndAppointmentDateAndAppointmentTimeAndStatusNot(</span>
+                doctorId, date, time, AppointmentStatus.CANCELLED);
+    }
+
+    private void validatePatientOwnership(Appointment appt, String email) {
+<span class="fc bfc" id="L238" title="All 2 branches covered.">        if (!appt.getPatient().getEmail().equals(email))</span>
+<span class="fc" id="L239">            throw new AppException(&quot;You do not have permission to modify this appointment.&quot;);</span>
+<span class="fc" id="L240">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
