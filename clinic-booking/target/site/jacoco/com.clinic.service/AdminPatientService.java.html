@@ -27,35 +27,35 @@ public class AdminPatientService {
     private final AppointmentRepository appointmentRepository;
 
     private String getBookedDoctorsDisplay(Long patientId) {
-<span class="nc" id="L30">        return appointmentRepository.findByPatientIdOrderByAppointmentDateDescAppointmentTimeDesc(patientId).stream()</span>
-<span class="nc" id="L31">                .map(appt -&gt; appt.getDoctor().getUser().getFullName())</span>
-<span class="nc" id="L32">                .filter(Objects::nonNull)</span>
-<span class="nc" id="L33">                .map(String::trim)</span>
-<span class="nc bnc" id="L34" title="All 2 branches missed.">                .filter(name -&gt; !name.isBlank())</span>
-<span class="nc bnc" id="L35" title="All 2 branches missed.">                .map(name -&gt; name.startsWith(&quot;Dr.&quot;) ? name : &quot;Dr. &quot; + name)</span>
-<span class="nc" id="L36">                .distinct()</span>
-<span class="nc" id="L37">                .collect(Collectors.collectingAndThen(Collectors.joining(&quot;, &quot;),</span>
-<span class="nc bnc" id="L38" title="All 2 branches missed.">                        names -&gt; names.isBlank() ? &quot;—&quot; : names));</span>
+<span class="fc" id="L30">        return appointmentRepository.findByPatientIdOrderByAppointmentDateDescAppointmentTimeDesc(patientId).stream()</span>
+<span class="fc" id="L31">                .map(appt -&gt; appt.getDoctor().getUser().getFullName())</span>
+<span class="fc" id="L32">                .filter(Objects::nonNull)</span>
+<span class="fc" id="L33">                .map(String::trim)</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">                .filter(name -&gt; !name.isBlank())</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">                .map(name -&gt; name.startsWith(&quot;Dr.&quot;) ? name : &quot;Dr. &quot; + name)</span>
+<span class="fc" id="L36">                .distinct()</span>
+<span class="fc" id="L37">                .collect(Collectors.collectingAndThen(Collectors.joining(&quot;, &quot;),</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">                        names -&gt; names.isBlank() ? &quot;—&quot; : names));</span>
     }
 
 
     public List&lt;AdminPatientRow&gt; getPatients(String search, String status, String registration, String appointments) {
-<span class="nc" id="L43">        List&lt;User&gt; patients = userRepository.findByRole(Role.PATIENT);</span>
+<span class="fc" id="L43">        List&lt;User&gt; patients = userRepository.findByRole(Role.PATIENT);</span>
 
-<span class="nc bnc" id="L45" title="All 4 branches missed.">        if (search != null &amp;&amp; !search.isBlank()) {</span>
-<span class="nc" id="L46">            String q = search.trim().toLowerCase();</span>
-<span class="nc" id="L47">            patients = patients.stream()</span>
-<span class="nc bnc" id="L48" title="All 4 branches missed.">                    .filter(p -&gt; p.getFullName().toLowerCase().contains(q) || p.getEmail().toLowerCase().contains(q))</span>
-<span class="nc" id="L49">                    .toList();</span>
+<span class="pc bpc" id="L45" title="1 of 4 branches missed.">        if (search != null &amp;&amp; !search.isBlank()) {</span>
+<span class="fc" id="L46">            String q = search.trim().toLowerCase();</span>
+<span class="fc" id="L47">            patients = patients.stream()</span>
+<span class="pc bpc" id="L48" title="1 of 4 branches missed.">                    .filter(p -&gt; p.getFullName().toLowerCase().contains(q) || p.getEmail().toLowerCase().contains(q))</span>
+<span class="fc" id="L49">                    .toList();</span>
         }
 
-<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (&quot;ACTIVE&quot;.equalsIgnoreCase(status)) {</span>
-<span class="nc" id="L53">            patients = patients.stream().filter(User::isEnabled).toList();</span>
-<span class="nc bnc" id="L54" title="All 2 branches missed.">        } else if (&quot;INACTIVE&quot;.equalsIgnoreCase(status)) {</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (&quot;ACTIVE&quot;.equalsIgnoreCase(status)) {</span>
+<span class="fc" id="L53">            patients = patients.stream().filter(User::isEnabled).toList();</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        } else if (&quot;INACTIVE&quot;.equalsIgnoreCase(status)) {</span>
 <span class="nc bnc" id="L55" title="All 2 branches missed.">            patients = patients.stream().filter(p -&gt; !p.isEnabled()).toList();</span>
         }
 
-<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (&quot;RECENT&quot;.equalsIgnoreCase(registration)) {</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        if (&quot;RECENT&quot;.equalsIgnoreCase(registration)) {</span>
 <span class="nc" id="L59">            LocalDateTime from = LocalDateTime.now().minusDays(30);</span>
 <span class="nc" id="L60">            patients = patients.stream()</span>
 <span class="nc" id="L61">                    .filter(</span>
@@ -63,41 +63,41 @@ public class AdminPatientService {
 <span class="nc" id="L63">                    .toList();</span>
         }
 
-<span class="nc" id="L66">        Map&lt;Long, Long&gt; appointmentCounts = patients.stream()</span>
-<span class="nc" id="L67">                .collect(Collectors.toMap(User::getId, p -&gt; appointmentRepository.countByPatientId(p.getId())));</span>
+<span class="fc" id="L66">        Map&lt;Long, Long&gt; appointmentCounts = patients.stream()</span>
+<span class="fc" id="L67">                .collect(Collectors.toMap(User::getId, p -&gt; appointmentRepository.countByPatientId(p.getId())));</span>
 
-<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (&quot;NONE&quot;.equalsIgnoreCase(appointments)) {</span>
-<span class="nc bnc" id="L70" title="All 2 branches missed.">            patients = patients.stream().filter(p -&gt; appointmentCounts.getOrDefault(p.getId(), 0L) == 0).toList();</span>
-<span class="nc bnc" id="L71" title="All 2 branches missed.">        } else if (&quot;FEW&quot;.equalsIgnoreCase(appointments)) {</span>
-<span class="nc" id="L72">            patients = patients.stream().filter(p -&gt; {</span>
-<span class="nc" id="L73">                long c = appointmentCounts.getOrDefault(p.getId(), 0L);</span>
-<span class="nc bnc" id="L74" title="All 4 branches missed.">                return c &gt; 0 &amp;&amp; c &lt; 3;</span>
-<span class="nc" id="L75">            }).toList();</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (&quot;NONE&quot;.equalsIgnoreCase(appointments)) {</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">            patients = patients.stream().filter(p -&gt; appointmentCounts.getOrDefault(p.getId(), 0L) == 0).toList();</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        } else if (&quot;FEW&quot;.equalsIgnoreCase(appointments)) {</span>
+<span class="fc" id="L72">            patients = patients.stream().filter(p -&gt; {</span>
+<span class="fc" id="L73">                long c = appointmentCounts.getOrDefault(p.getId(), 0L);</span>
+<span class="pc bpc" id="L74" title="2 of 4 branches missed.">                return c &gt; 0 &amp;&amp; c &lt; 3;</span>
+<span class="fc" id="L75">            }).toList();</span>
 <span class="nc bnc" id="L76" title="All 2 branches missed.">        } else if (&quot;MANY&quot;.equalsIgnoreCase(appointments)) {</span>
 <span class="nc bnc" id="L77" title="All 2 branches missed.">            patients = patients.stream().filter(p -&gt; appointmentCounts.getOrDefault(p.getId(), 0L) &gt;= 3).toList();</span>
         }
 
-<span class="nc" id="L80">        return patients.stream()</span>
-<span class="nc" id="L81">                .sorted(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))</span>
-<span class="nc" id="L82">                .map(p -&gt; AdminPatientRow.of(</span>
-<span class="nc" id="L83">                        p.getId(),</span>
-<span class="nc" id="L84">                        p.getFullName(),</span>
-<span class="nc" id="L85">                        p.getEmail(),</span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">                        p.getCreatedAt() == null ? null : p.getCreatedAt().toLocalDate(),</span>
-<span class="nc" id="L87">                        p.isEnabled(),</span>
-<span class="nc" id="L88">                        appointmentCounts.getOrDefault(p.getId(), 0L),</span>
-<span class="nc" id="L89">                        getBookedDoctorsDisplay(p.getId())</span>
+<span class="fc" id="L80">        return patients.stream()</span>
+<span class="fc" id="L81">                .sorted(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))</span>
+<span class="fc" id="L82">                .map(p -&gt; AdminPatientRow.of(</span>
+<span class="fc" id="L83">                        p.getId(),</span>
+<span class="fc" id="L84">                        p.getFullName(),</span>
+<span class="fc" id="L85">                        p.getEmail(),</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">                        p.getCreatedAt() == null ? null : p.getCreatedAt().toLocalDate(),</span>
+<span class="fc" id="L87">                        p.isEnabled(),</span>
+<span class="fc" id="L88">                        appointmentCounts.getOrDefault(p.getId(), 0L),</span>
+<span class="fc" id="L89">                        getBookedDoctorsDisplay(p.getId())</span>
                 ))
-<span class="nc" id="L91">                .toList();</span>
+<span class="fc" id="L91">                .toList();</span>
     }
 
     public User getPatient(Long patientId) {
-<span class="nc" id="L95">        User patient = userRepository.findById(patientId)</span>
-<span class="nc" id="L96">                .orElseThrow(() -&gt; new NotFoundException(&quot;Patient&quot;, patientId));</span>
-<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (patient.getRole() != Role.PATIENT) {</span>
-<span class="nc" id="L98">            throw new NotFoundException(&quot;Patient&quot;, patientId);</span>
+<span class="fc" id="L95">        User patient = userRepository.findById(patientId)</span>
+<span class="pc" id="L96">                .orElseThrow(() -&gt; new NotFoundException(&quot;Patient&quot;, patientId));</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        if (patient.getRole() != Role.PATIENT) {</span>
+<span class="fc" id="L98">            throw new NotFoundException(&quot;Patient&quot;, patientId);</span>
         }
-<span class="nc" id="L100">        return patient;</span>
+<span class="fc" id="L100">        return patient;</span>
     }
 
     public List&lt;Appointment&gt; getPatientAppointments(Long patientId) {
@@ -105,77 +105,77 @@ public class AdminPatientService {
     }
 
     public void togglePatient(Long patientId) {
-<span class="nc" id="L108">        User patient = getPatient(patientId);</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">        patient.setEnabled(!patient.isEnabled());</span>
-<span class="nc" id="L110">        userRepository.save(patient);</span>
-<span class="nc" id="L111">    }</span>
+<span class="fc" id="L108">        User patient = getPatient(patientId);</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">        patient.setEnabled(!patient.isEnabled());</span>
+<span class="fc" id="L110">        userRepository.save(patient);</span>
+<span class="fc" id="L111">    }</span>
 
     public AdminDashboardPatientStats getDashboardPatientStats() {
-<span class="nc" id="L114">        AdminDashboardPatientStats stats = new AdminDashboardPatientStats();</span>
-<span class="nc" id="L115">        stats.setTotalPatients(userRepository.countByRole(Role.PATIENT));</span>
+<span class="fc" id="L114">        AdminDashboardPatientStats stats = new AdminDashboardPatientStats();</span>
+<span class="fc" id="L115">        stats.setTotalPatients(userRepository.countByRole(Role.PATIENT));</span>
 
-<span class="nc" id="L117">        YearMonth currentMonth = YearMonth.now();</span>
-<span class="nc" id="L118">        LocalDateTime from = currentMonth.atDay(1).atStartOfDay();</span>
-<span class="nc" id="L119">        LocalDateTime to = currentMonth.atEndOfMonth().atTime(23, 59, 59);</span>
-<span class="nc" id="L120">        stats.setNewPatientsThisMonth(userRepository.countByRoleAndCreatedAtBetween(Role.PATIENT, from, to));</span>
+<span class="fc" id="L117">        YearMonth currentMonth = YearMonth.now();</span>
+<span class="fc" id="L118">        LocalDateTime from = currentMonth.atDay(1).atStartOfDay();</span>
+<span class="fc" id="L119">        LocalDateTime to = currentMonth.atEndOfMonth().atTime(23, 59, 59);</span>
+<span class="fc" id="L120">        stats.setNewPatientsThisMonth(userRepository.countByRoleAndCreatedAtBetween(Role.PATIENT, from, to));</span>
 
-<span class="nc" id="L122">        stats.setActivePatients(userRepository.countByRoleAndEnabledTrue(Role.PATIENT));</span>
+<span class="fc" id="L122">        stats.setActivePatients(userRepository.countByRoleAndEnabledTrue(Role.PATIENT));</span>
 
-<span class="nc" id="L124">        List&lt;User&gt; patients = userRepository.findByRole(Role.PATIENT);</span>
-<span class="nc" id="L125">        List&lt;Long&gt; patientIds = patients.stream().map(User::getId).toList();</span>
-<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (patientIds.isEmpty()) {</span>
-<span class="nc" id="L127">            stats.setFrequentPatients(0);</span>
-<span class="nc" id="L128">            stats.setNoShowPatients(0);</span>
-<span class="nc" id="L129">            return stats;</span>
+<span class="fc" id="L124">        List&lt;User&gt; patients = userRepository.findByRole(Role.PATIENT);</span>
+<span class="fc" id="L125">        List&lt;Long&gt; patientIds = patients.stream().map(User::getId).toList();</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        if (patientIds.isEmpty()) {</span>
+<span class="fc" id="L127">            stats.setFrequentPatients(0);</span>
+<span class="fc" id="L128">            stats.setNoShowPatients(0);</span>
+<span class="fc" id="L129">            return stats;</span>
         }
 
-<span class="nc" id="L132">        Map&lt;Long, Long&gt; appointmentCounts = appointmentRepository.findAppointmentCountsByPatientIds(patientIds).stream()</span>
-<span class="nc" id="L133">                .collect(Collectors.toMap(AppointmentRepository.PatientAppointmentCount::getPatientId,</span>
+<span class="fc" id="L132">        Map&lt;Long, Long&gt; appointmentCounts = appointmentRepository.findAppointmentCountsByPatientIds(patientIds).stream()</span>
+<span class="fc" id="L133">                .collect(Collectors.toMap(AppointmentRepository.PatientAppointmentCount::getPatientId,</span>
                         AppointmentRepository.PatientAppointmentCount::getTotal));
 
-<span class="nc bnc" id="L136" title="All 2 branches missed.">        stats.setFrequentPatients(appointmentCounts.values().stream().filter(c -&gt; c &gt;= 3).count());</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        stats.setFrequentPatients(appointmentCounts.values().stream().filter(c -&gt; c &gt;= 3).count());</span>
 
-<span class="nc" id="L138">        long noShows = patientIds.stream()</span>
-<span class="nc bnc" id="L139" title="All 2 branches missed.">                .filter(id -&gt; appointmentRepository.countByPatientIdAndStatus(id, AppointmentStatus.NO_SHOW) &gt; 0)</span>
-<span class="nc" id="L140">                .count();</span>
-<span class="nc" id="L141">        stats.setNoShowPatients(noShows);</span>
-<span class="nc" id="L142">        return stats;</span>
+<span class="fc" id="L138">        long noShows = patientIds.stream()</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">                .filter(id -&gt; appointmentRepository.countByPatientIdAndStatus(id, AppointmentStatus.NO_SHOW) &gt; 0)</span>
+<span class="fc" id="L140">                .count();</span>
+<span class="fc" id="L141">        stats.setNoShowPatients(noShows);</span>
+<span class="fc" id="L142">        return stats;</span>
     }
 
     public List&lt;AdminPatientRow&gt; getMostFrequentPatients(int limit) {
-<span class="nc" id="L146">        List&lt;User&gt; patients = userRepository.findByRole(Role.PATIENT);</span>
-<span class="nc" id="L147">        Map&lt;Long, User&gt; byId = patients.stream().collect(Collectors.toMap(User::getId, Function.identity()));</span>
+<span class="fc" id="L146">        List&lt;User&gt; patients = userRepository.findByRole(Role.PATIENT);</span>
+<span class="fc" id="L147">        Map&lt;Long, User&gt; byId = patients.stream().collect(Collectors.toMap(User::getId, Function.identity()));</span>
 
-<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (byId.isEmpty()) {</span>
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if (byId.isEmpty()) {</span>
 <span class="nc" id="L150">            return List.of();</span>
         }
 
-<span class="nc" id="L153">        return appointmentRepository.findAppointmentCountsByPatientIds(new ArrayList&lt;&gt;(byId.keySet())).stream()</span>
-<span class="nc" id="L154">                .limit(limit)</span>
-<span class="nc" id="L155">                .map(c -&gt; {</span>
-<span class="nc" id="L156">                    User patient = byId.get(c.getPatientId());</span>
-<span class="nc" id="L157">                    return AdminPatientRow.of(patient.getId(), patient.getFullName(), patient.getEmail(),</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">                            patient.getCreatedAt() == null ? null : patient.getCreatedAt().toLocalDate(),</span>
-<span class="nc" id="L159">                            patient.isEnabled(), c.getTotal(), getBookedDoctorsDisplay(patient.getId()));</span>
+<span class="fc" id="L153">        return appointmentRepository.findAppointmentCountsByPatientIds(new ArrayList&lt;&gt;(byId.keySet())).stream()</span>
+<span class="fc" id="L154">                .limit(limit)</span>
+<span class="fc" id="L155">                .map(c -&gt; {</span>
+<span class="fc" id="L156">                    User patient = byId.get(c.getPatientId());</span>
+<span class="fc" id="L157">                    return AdminPatientRow.of(patient.getId(), patient.getFullName(), patient.getEmail(),</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">                            patient.getCreatedAt() == null ? null : patient.getCreatedAt().toLocalDate(),</span>
+<span class="fc" id="L159">                            patient.isEnabled(), c.getTotal(), getBookedDoctorsDisplay(patient.getId()));</span>
                 })
-<span class="nc" id="L161">                .toList();</span>
+<span class="fc" id="L161">                .toList();</span>
     }
 
     public List&lt;AdminPatientRow&gt; getNoShowPatients() {
-<span class="nc" id="L165">        List&lt;User&gt; patients = userRepository.findByRole(Role.PATIENT);</span>
-<span class="nc" id="L166">        return patients.stream()</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">                .filter(p -&gt; appointmentRepository.countByPatientIdAndStatus(p.getId(), AppointmentStatus.NO_SHOW) &gt; 0)</span>
-<span class="nc" id="L168">                .map(p -&gt; AdminPatientRow.of(</span>
-<span class="nc" id="L169">                        p.getId(),</span>
-<span class="nc" id="L170">                        p.getFullName(),</span>
-<span class="nc" id="L171">                        p.getEmail(),</span>
-<span class="nc bnc" id="L172" title="All 2 branches missed.">                        p.getCreatedAt() == null ? null : p.getCreatedAt().toLocalDate(),</span>
-<span class="nc" id="L173">                        p.isEnabled(),</span>
-<span class="nc" id="L174">                        appointmentRepository.countByPatientId(p.getId()),</span>
-<span class="nc" id="L175">                        getBookedDoctorsDisplay(p.getId())</span>
+<span class="fc" id="L165">        List&lt;User&gt; patients = userRepository.findByRole(Role.PATIENT);</span>
+<span class="fc" id="L166">        return patients.stream()</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">                .filter(p -&gt; appointmentRepository.countByPatientIdAndStatus(p.getId(), AppointmentStatus.NO_SHOW) &gt; 0)</span>
+<span class="fc" id="L168">                .map(p -&gt; AdminPatientRow.of(</span>
+<span class="fc" id="L169">                        p.getId(),</span>
+<span class="fc" id="L170">                        p.getFullName(),</span>
+<span class="fc" id="L171">                        p.getEmail(),</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">                        p.getCreatedAt() == null ? null : p.getCreatedAt().toLocalDate(),</span>
+<span class="fc" id="L173">                        p.isEnabled(),</span>
+<span class="fc" id="L174">                        appointmentRepository.countByPatientId(p.getId()),</span>
+<span class="fc" id="L175">                        getBookedDoctorsDisplay(p.getId())</span>
                 ))
-<span class="nc" id="L177">                .sorted(Comparator.comparing(AdminPatientRow::getAppointmentCount).reversed())</span>
-<span class="nc" id="L178">                .toList();</span>
+<span class="fc" id="L177">                .sorted(Comparator.comparing(AdminPatientRow::getAppointmentCount).reversed())</span>
+<span class="fc" id="L178">                .toList();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

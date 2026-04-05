@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 
     @ExceptionHandler(AppException.class)
     public Object handle(AppException ex, HttpServletRequest req) {
-<span class="nc" id="L25">        log.warn(&quot;Business error [{}]: {}&quot;, req.getRequestURI(), ex.getMessage());</span>
-<span class="nc bnc" id="L26" title="All 2 branches missed.">        return isApi(req)</span>
-<span class="nc" id="L27">                ? ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()))</span>
+<span class="fc" id="L25">        log.warn(&quot;Business error [{}]: {}&quot;, req.getRequestURI(), ex.getMessage());</span>
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        return isApi(req)</span>
+<span class="fc" id="L27">                ? ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()))</span>
 <span class="nc" id="L28">                : errorView(400, ex.getMessage());</span>
     }
 
@@ -32,22 +32,22 @@ import java.util.stream.Collectors;
 
     @ExceptionHandler(NotFoundException.class)
     public Object handle(NotFoundException ex, HttpServletRequest req) {
-<span class="nc" id="L35">        log.warn(&quot;Not found [{}]: {}&quot;, req.getRequestURI(), ex.getMessage());</span>
-<span class="nc bnc" id="L36" title="All 2 branches missed.">        return isApi(req)</span>
+<span class="fc" id="L35">        log.warn(&quot;Not found [{}]: {}&quot;, req.getRequestURI(), ex.getMessage());</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        return isApi(req)</span>
 <span class="nc" id="L37">                ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()))</span>
-<span class="nc" id="L38">                : errorView(404, ex.getMessage());</span>
+<span class="fc" id="L38">                : errorView(404, ex.getMessage());</span>
     }
 
     // ── Validation (400) ──────────────────────────────────────────────────────
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Object handle(MethodArgumentNotValidException ex, HttpServletRequest req) {
-<span class="nc" id="L45">        String msg = ex.getBindingResult().getFieldErrors().stream()</span>
-<span class="nc" id="L46">                .map(FieldError::getDefaultMessage)</span>
-<span class="nc" id="L47">                .collect(Collectors.joining(&quot;, &quot;));</span>
-<span class="nc" id="L48">        log.warn(&quot;Validation [{}]: {}&quot;, req.getRequestURI(), msg);</span>
-<span class="nc bnc" id="L49" title="All 2 branches missed.">        return isApi(req)</span>
-<span class="nc" id="L50">                ? ResponseEntity.badRequest().body(new ErrorResponse(msg))</span>
+<span class="fc" id="L45">        String msg = ex.getBindingResult().getFieldErrors().stream()</span>
+<span class="fc" id="L46">                .map(FieldError::getDefaultMessage)</span>
+<span class="fc" id="L47">                .collect(Collectors.joining(&quot;, &quot;));</span>
+<span class="fc" id="L48">        log.warn(&quot;Validation [{}]: {}&quot;, req.getRequestURI(), msg);</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        return isApi(req)</span>
+<span class="fc" id="L50">                ? ResponseEntity.badRequest().body(new ErrorResponse(msg))</span>
 <span class="nc" id="L51">                : errorView(400, msg);</span>
     }
 
@@ -72,28 +72,28 @@ import java.util.stream.Collectors;
 
     @ExceptionHandler(Exception.class)
     public Object handle(Exception ex, HttpServletRequest req) {
-<span class="nc" id="L75">        log.error(&quot;Unexpected error [{}]: {}&quot;, req.getRequestURI(), ex.getMessage(), ex);</span>
-<span class="nc bnc" id="L76" title="All 2 branches missed.">        return isApi(req)</span>
+<span class="fc" id="L75">        log.error(&quot;Unexpected error [{}]: {}&quot;, req.getRequestURI(), ex.getMessage(), ex);</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        return isApi(req)</span>
 <span class="nc" id="L77">                ? ResponseEntity.internalServerError().body(new ErrorResponse(&quot;Something went wrong. Please try again.&quot;))</span>
-<span class="nc" id="L78">                : errorView(500, &quot;Something went wrong. Please try again.&quot;);</span>
+<span class="fc" id="L78">                : errorView(500, &quot;Something went wrong. Please try again.&quot;);</span>
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private boolean isApi(HttpServletRequest req) {
-<span class="nc" id="L84">        String accept = req.getHeader(&quot;Accept&quot;);</span>
-<span class="nc bnc" id="L85" title="All 4 branches missed.">        return req.getRequestURI().startsWith(&quot;/api/&quot;) ||</span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">               (accept != null &amp;&amp; accept.contains(&quot;application/json&quot;));</span>
+<span class="fc" id="L84">        String accept = req.getHeader(&quot;Accept&quot;);</span>
+<span class="pc bpc" id="L85" title="1 of 4 branches missed.">        return req.getRequestURI().startsWith(&quot;/api/&quot;) ||</span>
+<span class="pc bnc" id="L86" title="All 2 branches missed.">               (accept != null &amp;&amp; accept.contains(&quot;application/json&quot;));</span>
     }
 
     private ModelAndView errorView(int status, String message) {
-<span class="nc" id="L90">        ModelAndView mv = new ModelAndView(&quot;error&quot;);</span>
-<span class="nc" id="L91">        mv.addObject(&quot;statusCode&quot;, status);</span>
-<span class="nc" id="L92">        mv.addObject(&quot;errorMessage&quot;, message);</span>
-<span class="nc" id="L93">        mv.setStatus(HttpStatus.valueOf(status));</span>
-<span class="nc" id="L94">        return mv;</span>
+<span class="fc" id="L90">        ModelAndView mv = new ModelAndView(&quot;error&quot;);</span>
+<span class="fc" id="L91">        mv.addObject(&quot;statusCode&quot;, status);</span>
+<span class="fc" id="L92">        mv.addObject(&quot;errorMessage&quot;, message);</span>
+<span class="fc" id="L93">        mv.setStatus(HttpStatus.valueOf(status));</span>
+<span class="fc" id="L94">        return mv;</span>
     }
 
-<span class="nc" id="L97">    public record ErrorResponse(String message) {}</span>
+<span class="fc" id="L97">    public record ErrorResponse(String message) {}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

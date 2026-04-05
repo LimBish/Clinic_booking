@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity @Table(name = &quot;users&quot;)
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-<span class="nc" id="L15">    private Long id;</span>
+<span class="fc" id="L15">    private Long id;</span>
 
 <span class="fc" id="L17">    @Column(nullable = false) private String fullName;</span>
 <span class="fc" id="L18">    @Column(nullable = false, unique = true) private String email;</span>
@@ -23,11 +23,11 @@ public class User {
     @Column(nullable = false)
 <span class="fc" id="L24">    private Role role;</span>
 
-<span class="pc" id="L26">    private boolean enabled = true;</span>
+<span class="fc" id="L26">    private boolean enabled = true;</span>
 
     @CreationTimestamp
     @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
-<span class="nc" id="L30">    private LocalDateTime createdAt;</span>
+<span class="fc" id="L30">    private LocalDateTime createdAt;</span>
 
 <span class="fc" id="L32">    public User(String fullName, String email, String password, String phone, Role role) {</span>
 <span class="fc" id="L33">        this.fullName = fullName;</span>

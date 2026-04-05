@@ -2,6 +2,7 @@ package com.clinic.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -45,8 +46,14 @@ class GlobalExceptionHandlerTest {
         BeanPropertyBindingResult binding = new BeanPropertyBindingResult(new Object(), "obj");
         binding.addError(new FieldError("obj", "email", "Invalid email"));
         binding.addError(new FieldError("obj", "password", "Too short"));
-        MethodArgumentNotValidException ex = new MethodArgumentNotValidException(
-                Dummy.class.getDeclaredMethod("dummy", String.class), binding);
+
+        MethodParameter parameter = new MethodParameter(
+                Dummy.class.getDeclaredMethod("dummy", String.class),
+                0
+        );
+
+        MethodArgumentNotValidException ex =
+                new MethodArgumentNotValidException(parameter, binding);
 
         MockHttpServletRequest req = new MockHttpServletRequest();
         req.setRequestURI("/api/register");
@@ -59,7 +66,6 @@ class GlobalExceptionHandlerTest {
         assertTrue(body.contains("Invalid email"));
         assertTrue(body.contains("Too short"));
     }
-
     @Test
     void handleGeneric_forWeb_returns500View() {
         HttpServletRequest req = new MockHttpServletRequest("GET", "/x");

@@ -41,8 +41,8 @@ public class JwtFilter extends OncePerRequestFilter {
                     }
 <span class="nc" id="L42">                } catch (JwtUtil.ExpiredTokenException e) {</span>
 <span class="nc" id="L43">                    req.setAttribute(&quot;jwt_error&quot;, &quot;expired token&quot;);</span>
-<span class="nc" id="L44">                } catch (JwtUtil.InvalidTokenException e) {</span>
-<span class="nc" id="L45">                    req.setAttribute(&quot;jwt_error&quot;, &quot;incorrect JWT token&quot;);</span>
+<span class="fc" id="L44">                } catch (JwtUtil.InvalidTokenException e) {</span>
+<span class="fc" id="L45">                    req.setAttribute(&quot;jwt_error&quot;, &quot;incorrect JWT token&quot;);</span>
 <span class="nc" id="L46">                } catch (Exception e) {</span>
 <span class="nc" id="L47">                    req.setAttribute(&quot;jwt_error&quot;, &quot;incorrect JWT token&quot;);</span>
 <span class="pc" id="L48">                }</span>
@@ -53,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private String extractToken(HttpServletRequest req) {
         // Check Authorization header
 <span class="fc" id="L55">        String header = req.getHeader(&quot;Authorization&quot;);</span>
-<span class="pc bpc" id="L56" title="3 of 4 branches missed.">        if (header != null &amp;&amp; header.startsWith(&quot;Bearer &quot;)) return header.substring(7);</span>
+<span class="pc bpc" id="L56" title="1 of 4 branches missed.">        if (header != null &amp;&amp; header.startsWith(&quot;Bearer &quot;)) return header.substring(7);</span>
         // Check cookie
 <span class="fc bfc" id="L58" title="All 2 branches covered.">        if (req.getCookies() != null) {</span>
 <span class="fc" id="L59">            return Arrays.stream(req.getCookies())</span>

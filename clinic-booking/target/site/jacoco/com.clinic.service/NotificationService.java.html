@@ -21,11 +21,11 @@ import java.time.LocalDate;
 <span class="fc" id="L21">    }</span>
 
     public void sendCancellation(Appointment appt) {
-<span class="nc" id="L24">        log.info(&quot;[NOTIFY] APPOINTMENT CANCELLED → Patient: {} | Dr. {} | {}&quot;,</span>
-<span class="nc" id="L25">                appt.getPatient().getFullName(),</span>
-<span class="nc" id="L26">                appt.getDoctor().getUser().getFullName(),</span>
-<span class="nc" id="L27">                appt.getAppointmentDate());</span>
-<span class="nc" id="L28">    }</span>
+<span class="fc" id="L24">        log.info(&quot;[NOTIFY] APPOINTMENT CANCELLED → Patient: {} | Dr. {} | {}&quot;,</span>
+<span class="fc" id="L25">                appt.getPatient().getFullName(),</span>
+<span class="fc" id="L26">                appt.getDoctor().getUser().getFullName(),</span>
+<span class="fc" id="L27">                appt.getAppointmentDate());</span>
+<span class="fc" id="L28">    }</span>
 
     public void sendConsultationComplete(Appointment appt) {
 <span class="nc" id="L31">        log.info(&quot;[NOTIFY] CONSULTATION COMPLETED → Patient: {} | Dr. {} | {}&quot;,</span>
@@ -36,18 +36,18 @@ import java.time.LocalDate;
 
     // Notifies the clinic (admin) when a doctor marks a day as unavailable
     public void sendLeaveNotification(Doctor doctor, LocalDate date, String reason) {
-<span class="nc" id="L39">        log.info(&quot;[NOTIFY] DOCTOR LEAVE → Dr. {} is unavailable on {} | Reason: {}&quot;,</span>
-<span class="nc bnc" id="L40" title="All 2 branches missed.">                doctor.getUser().getFullName(), date, reason != null ? reason : &quot;Not specified&quot;);</span>
-<span class="nc" id="L41">    }</span>
+<span class="fc" id="L39">        log.info(&quot;[NOTIFY] DOCTOR LEAVE → Dr. {} is unavailable on {} | Reason: {}&quot;,</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">                doctor.getUser().getFullName(), date, reason != null ? reason : &quot;Not specified&quot;);</span>
+<span class="fc" id="L41">    }</span>
 
     // Notifies affected patients when doctor marks a leave on a day they have bookings
     public void sendLeaveAffectedPatient(Appointment appt, String reason) {
-<span class="nc" id="L45">        log.info(&quot;[NOTIFY] LEAVE AFFECTS PATIENT → Patient: {} | Appointment {} at {} cancelled due to: {}&quot;,</span>
-<span class="nc" id="L46">                appt.getPatient().getFullName(),</span>
-<span class="nc" id="L47">                appt.getAppointmentDate(),</span>
-<span class="nc" id="L48">                appt.getAppointmentTime(),</span>
-<span class="nc bnc" id="L49" title="All 2 branches missed.">                reason != null ? reason : &quot;Doctor unavailable&quot;);</span>
-<span class="nc" id="L50">    }</span>
+<span class="fc" id="L45">        log.info(&quot;[NOTIFY] LEAVE AFFECTS PATIENT → Patient: {} | Appointment {} at {} cancelled due to: {}&quot;,</span>
+<span class="fc" id="L46">                appt.getPatient().getFullName(),</span>
+<span class="fc" id="L47">                appt.getAppointmentDate(),</span>
+<span class="fc" id="L48">                appt.getAppointmentTime(),</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">                reason != null ? reason : &quot;Doctor unavailable&quot;);</span>
+<span class="fc" id="L50">    }</span>
 
     // Notifies clinic when doctor updates their weekly schedule
     public void sendScheduleUpdated(Doctor doctor, String dayOfWeek) {

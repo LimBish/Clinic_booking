@@ -43,9 +43,9 @@ public class AuthController {
         try {
 <span class="nc" id="L44">            authService.register(req);</span>
 <span class="nc" id="L45">            return &quot;redirect:/login?registered&quot;;</span>
-<span class="nc" id="L46">        } catch (AppException e) {</span>
-<span class="nc" id="L47">            model.addAttribute(&quot;error&quot;, e.getMessage());</span>
-<span class="nc" id="L48">            return &quot;register&quot;;</span>
+<span class="fc" id="L46">        } catch (AppException e) {</span>
+<span class="fc" id="L47">            model.addAttribute(&quot;error&quot;, e.getMessage());</span>
+<span class="fc" id="L48">            return &quot;register&quot;;</span>
         }
     }
 
@@ -53,20 +53,20 @@ public class AuthController {
     @PostMapping(&quot;/login&quot;)
     public String login(@Valid @ModelAttribute LoginRequest req, Model model, HttpServletResponse res) {
         try {
-<span class="nc" id="L56">            AuthResponse auth = authService.login(req);</span>
-<span class="nc" id="L57">            Cookie cookie = new Cookie(&quot;jwt&quot;, auth.getToken());</span>
-<span class="nc" id="L58">            cookie.setHttpOnly(true);</span>
-<span class="nc" id="L59">            cookie.setPath(&quot;/&quot;);</span>
-<span class="nc" id="L60">            cookie.setMaxAge(86400);</span>
-<span class="nc" id="L61">            res.addCookie(cookie);</span>
-<span class="nc bnc" id="L62" title="All 3 branches missed.">            return switch (auth.getRole()) {</span>
+<span class="fc" id="L56">            AuthResponse auth = authService.login(req);</span>
+<span class="fc" id="L57">            Cookie cookie = new Cookie(&quot;jwt&quot;, auth.getToken());</span>
+<span class="fc" id="L58">            cookie.setHttpOnly(true);</span>
+<span class="fc" id="L59">            cookie.setPath(&quot;/&quot;);</span>
+<span class="fc" id="L60">            cookie.setMaxAge(86400);</span>
+<span class="fc" id="L61">            res.addCookie(cookie);</span>
+<span class="pc bpc" id="L62" title="2 of 3 branches missed.">            return switch (auth.getRole()) {</span>
 <span class="nc" id="L63">                case &quot;ADMIN&quot;  -&gt; &quot;redirect:/admin/dashboard&quot;;</span>
-<span class="nc" id="L64">                case &quot;DOCTOR&quot; -&gt; &quot;redirect:/doctor/dashboard&quot;;</span>
+<span class="fc" id="L64">                case &quot;DOCTOR&quot; -&gt; &quot;redirect:/doctor/dashboard&quot;;</span>
 <span class="nc" id="L65">                default       -&gt; &quot;redirect:/patient/dashboard&quot;;</span>
             };
-<span class="nc" id="L67">        } catch (BadCredentialsException e) {</span>
-<span class="nc" id="L68">            model.addAttribute(&quot;error&quot;, &quot;Invalid email or password&quot;);</span>
-<span class="nc" id="L69">            return &quot;login&quot;;</span>
+<span class="fc" id="L67">        } catch (BadCredentialsException e) {</span>
+<span class="fc" id="L68">            model.addAttribute(&quot;error&quot;, &quot;Invalid email or password&quot;);</span>
+<span class="fc" id="L69">            return &quot;login&quot;;</span>
         }
     }
 
@@ -87,30 +87,30 @@ public class AuthController {
     @PostMapping(&quot;/api/auth/basic-login&quot;)
     @ResponseBody
     public ResponseEntity&lt;?&gt; apiBasicLogin(@RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
-<span class="nc bnc" id="L90" title="All 4 branches missed.">        if (authHeader == null || !authHeader.startsWith(&quot;Basic &quot;)) {</span>
-<span class="nc" id="L91">            return ResponseEntity.status(401).body(new ApiMessage(&quot;Missing Basic Authorization header&quot;));</span>
+<span class="pc bpc" id="L90" title="1 of 4 branches missed.">        if (authHeader == null || !authHeader.startsWith(&quot;Basic &quot;)) {</span>
+<span class="fc" id="L91">            return ResponseEntity.status(401).body(new ApiMessage(&quot;Missing Basic Authorization header&quot;));</span>
         }
 
-<span class="nc" id="L94">        String base64 = authHeader.substring(6).trim();</span>
+<span class="fc" id="L94">        String base64 = authHeader.substring(6).trim();</span>
         String decoded;
         try {
-<span class="nc" id="L97">            decoded = new String(Base64.getDecoder().decode(base64), StandardCharsets.UTF_8);</span>
-<span class="nc" id="L98">        } catch (IllegalArgumentException e) {</span>
-<span class="nc" id="L99">            return ResponseEntity.status(401).body(new ApiMessage(&quot;Invalid Basic credentials format&quot;));</span>
-<span class="nc" id="L100">        }</span>
+<span class="fc" id="L97">            decoded = new String(Base64.getDecoder().decode(base64), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L98">        } catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L99">            return ResponseEntity.status(401).body(new ApiMessage(&quot;Invalid Basic credentials format&quot;));</span>
+<span class="fc" id="L100">        }</span>
 
-<span class="nc" id="L102">        int split = decoded.indexOf(':');</span>
-<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (split &lt; 1) {</span>
+<span class="fc" id="L102">        int split = decoded.indexOf(':');</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        if (split &lt; 1) {</span>
 <span class="nc" id="L104">            return ResponseEntity.status(401).body(new ApiMessage(&quot;Invalid Basic credentials format&quot;));</span>
         }
 
-<span class="nc" id="L107">        String email = decoded.substring(0, split);</span>
-<span class="nc" id="L108">        String password = decoded.substring(split + 1);</span>
-<span class="nc" id="L109">        AuthResponse auth = authService.loginBasicCredentials(email, password);</span>
-<span class="nc" id="L110">        return ResponseEntity.ok(new TokenResponse(auth.getToken()));</span>
+<span class="fc" id="L107">        String email = decoded.substring(0, split);</span>
+<span class="fc" id="L108">        String password = decoded.substring(split + 1);</span>
+<span class="fc" id="L109">        AuthResponse auth = authService.loginBasicCredentials(email, password);</span>
+<span class="fc" id="L110">        return ResponseEntity.ok(new TokenResponse(auth.getToken()));</span>
     }
 
-<span class="nc" id="L113">    public record ApiMessage(String message) {}</span>
-<span class="nc" id="L114">    public record TokenResponse(String token) {}</span>
+<span class="fc" id="L113">    public record ApiMessage(String message) {}</span>
+<span class="fc" id="L114">    public record TokenResponse(String token) {}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

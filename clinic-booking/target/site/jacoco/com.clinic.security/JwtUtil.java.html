@@ -38,8 +38,8 @@ import java.util.Date;
 <span class="fc" id="L38">                    .parseClaimsJws(token).getBody().getSubject();</span>
 <span class="nc" id="L39">        } catch (ExpiredJwtException e) {</span>
 <span class="nc" id="L40">            throw new ExpiredTokenException(&quot;expired&quot;);</span>
-<span class="nc" id="L41">        } catch (JwtException | IllegalArgumentException e) {</span>
-<span class="nc" id="L42">            throw new InvalidTokenException(&quot;invalid&quot;);</span>
+<span class="fc" id="L41">        } catch (JwtException | IllegalArgumentException e) {</span>
+<span class="fc" id="L42">            throw new InvalidTokenException(&quot;invalid&quot;);</span>
         }
     }
 
@@ -52,7 +52,7 @@ import java.util.Date;
     }
 
     public static class InvalidTokenException extends RuntimeException {
-<span class="nc" id="L55">        public InvalidTokenException(String message) { super(message); }</span>
+<span class="fc" id="L55">        public InvalidTokenException(String message) { super(message); }</span>
     }
 
     public static class ExpiredTokenException extends RuntimeException {

@@ -128,29 +128,29 @@ public class AppointmentService {
      * Respects: weekly schedule, leaves, already-booked slots, past times.
      */
     public List&lt;String&gt; getAvailableSlots(Long doctorId, LocalDate date) {
-<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (date.isBefore(LocalDate.now())) return List.of();</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (date.isBefore(LocalDate.now())) return List.of();</span>
 
         // Doctor on leave that day?
-<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        if (leaveRepo.existsByDoctorIdAndLeaveDate(doctorId, date)) return List.of();</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        if (leaveRepo.existsByDoctorIdAndLeaveDate(doctorId, date)) return List.of();</span>
 
-<span class="nc" id="L136">        List&lt;DoctorSchedule&gt; schedules = scheduleRepo</span>
-<span class="nc" id="L137">                .findByDoctorIdAndDayOfWeek(doctorId, date.getDayOfWeek());</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (schedules.isEmpty()) return List.of();</span>
+<span class="fc" id="L136">        List&lt;DoctorSchedule&gt; schedules = scheduleRepo</span>
+<span class="fc" id="L137">                .findByDoctorIdAndDayOfWeek(doctorId, date.getDayOfWeek());</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        if (schedules.isEmpty()) return List.of();</span>
 
-<span class="nc" id="L140">        List&lt;String&gt; slots = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L141">        LocalTime now = LocalTime.now();</span>
+<span class="fc" id="L140">        List&lt;String&gt; slots = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L141">        LocalTime now = LocalTime.now();</span>
 
-<span class="nc bnc" id="L143" title="All 2 branches missed.">        for (DoctorSchedule schedule : schedules) {</span>
-<span class="nc" id="L144">            LocalTime current = schedule.getStartTime();</span>
-<span class="nc bnc" id="L145" title="All 2 branches missed.">            while (current.isBefore(schedule.getEndTime())) {</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">        for (DoctorSchedule schedule : schedules) {</span>
+<span class="fc" id="L144">            LocalTime current = schedule.getStartTime();</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">            while (current.isBefore(schedule.getEndTime())) {</span>
                 // Skip past slots for today
-<span class="nc bnc" id="L147" title="All 4 branches missed.">                boolean isPast = date.equals(LocalDate.now()) &amp;&amp; current.isBefore(now);</span>
-<span class="nc bnc" id="L148" title="All 4 branches missed.">                if (!isPast &amp;&amp; !isSlotTaken(doctorId, date, current))</span>
-<span class="nc" id="L149">                    slots.add(current.toString());</span>
-<span class="nc" id="L150">                current = current.plusMinutes(schedule.getSlotDurationMinutes());</span>
-<span class="nc" id="L151">            }</span>
-<span class="nc" id="L152">        }</span>
-<span class="nc" id="L153">        return slots;</span>
+<span class="pc bpc" id="L147" title="3 of 4 branches missed.">                boolean isPast = date.equals(LocalDate.now()) &amp;&amp; current.isBefore(now);</span>
+<span class="pc bpc" id="L148" title="1 of 4 branches missed.">                if (!isPast &amp;&amp; !isSlotTaken(doctorId, date, current))</span>
+<span class="fc" id="L149">                    slots.add(current.toString());</span>
+<span class="fc" id="L150">                current = current.plusMinutes(schedule.getSlotDurationMinutes());</span>
+<span class="fc" id="L151">            }</span>
+<span class="fc" id="L152">        }</span>
+<span class="fc" id="L153">        return slots;</span>
     }
 
     /** Doctor marks appointment as consulted and adds notes */
@@ -159,21 +159,21 @@ public class AppointmentService {
 <span class="pc" id="L159">                .orElseThrow(() -&gt; new NotFoundException(&quot;Appointment&quot;, appointmentId));</span>
 
         // Verify it belongs to this doctor
-<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        if (!appt.getDoctor().getUser().getEmail().equals(doctorEmail))</span>
-<span class="nc" id="L163">            throw new AppException(&quot;You can only update your own appointments.&quot;);</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        if (!appt.getDoctor().getUser().getEmail().equals(doctorEmail))</span>
+<span class="fc" id="L163">            throw new AppException(&quot;You can only update your own appointments.&quot;);</span>
 
-<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        if (appt.getStatus() == AppointmentStatus.CANCELLED)</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (appt.getStatus() == AppointmentStatus.CANCELLED)</span>
 <span class="fc" id="L166">            throw new AppException(&quot;Cannot mark a cancelled appointment as consulted.&quot;);</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (appt.getStatus() == AppointmentStatus.COMPLETED)</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        if (appt.getStatus() == AppointmentStatus.COMPLETED)</span>
 <span class="nc" id="L168">            throw new AppException(&quot;This appointment is already marked as completed.&quot;);</span>
 
-<span class="nc" id="L170">        appt.setStatus(AppointmentStatus.COMPLETED);</span>
-<span class="nc" id="L171">        appt.setConsultationNotes(req.getConsultationNotes());</span>
-<span class="nc" id="L172">        appt.setConsultedAt(LocalDateTime.now());</span>
+<span class="fc" id="L170">        appt.setStatus(AppointmentStatus.COMPLETED);</span>
+<span class="fc" id="L171">        appt.setConsultationNotes(req.getConsultationNotes());</span>
+<span class="fc" id="L172">        appt.setConsultedAt(LocalDateTime.now());</span>
 
-<span class="nc" id="L174">        Appointment saved = appointmentRepo.save(appt);</span>
-<span class="nc" id="L175">        notificationService.sendConsultationComplete(saved);</span>
-<span class="nc" id="L176">        return saved;</span>
+<span class="fc" id="L174">        Appointment saved = appointmentRepo.save(appt);</span>
+<span class="fc" id="L175">        notificationService.sendConsultationComplete(saved);</span>
+<span class="fc" id="L176">        return saved;</span>
     }
 
     public Appointment cancel(Long appointmentId, String patientEmail) {
@@ -183,8 +183,8 @@ public class AppointmentService {
 
 <span class="pc bpc" id="L184" title="1 of 2 branches missed.">        if (appt.getStatus() == AppointmentStatus.CANCELLED)</span>
 <span class="nc" id="L185">            throw new AppException(&quot;Appointment is already cancelled.&quot;);</span>
-<span class="pc bpc" id="L186" title="1 of 2 branches missed.">        if (appt.getStatus() == AppointmentStatus.COMPLETED)</span>
-<span class="nc" id="L187">            throw new AppException(&quot;Completed appointments cannot be cancelled.&quot;);</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        if (appt.getStatus() == AppointmentStatus.COMPLETED)</span>
+<span class="fc" id="L187">            throw new AppException(&quot;Completed appointments cannot be cancelled.&quot;);</span>
 
 <span class="fc" id="L189">        appt.setStatus(AppointmentStatus.CANCELLED);</span>
 <span class="fc" id="L190">        Appointment saved = appointmentRepo.save(appt);</span>
@@ -193,7 +193,7 @@ public class AppointmentService {
     }
 
     public List&lt;Appointment&gt; getPatientHistory(String email) {
-<span class="nc" id="L196">        User patient = userRepo.findByEmail(email).orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, email));</span>
+<span class="pc" id="L196">        User patient = userRepo.findByEmail(email).orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, email));</span>
 <span class="nc" id="L197">        return appointmentRepo.findByPatientIdOrderByAppointmentDateDescAppointmentTimeDesc(patient.getId());</span>
     }
 
@@ -205,28 +205,28 @@ public class AppointmentService {
 
     /** Doctor: today's appointments */
     public List&lt;Appointment&gt; getDoctorTodayAppointments(String email) {
-<span class="nc" id="L208">        Doctor doctor = getDoctorByEmail(email);</span>
-<span class="nc" id="L209">        return appointmentRepo.findByDoctorIdAndAppointmentDateOrderByAppointmentTime(</span>
-<span class="nc" id="L210">                doctor.getId(), LocalDate.now());</span>
+<span class="fc" id="L208">        Doctor doctor = getDoctorByEmail(email);</span>
+<span class="fc" id="L209">        return appointmentRepo.findByDoctorIdAndAppointmentDateOrderByAppointmentTime(</span>
+<span class="fc" id="L210">                doctor.getId(), LocalDate.now());</span>
     }
 
     /** Doctor: appointments for a specific date */
     public List&lt;Appointment&gt; getDoctorAppointmentsForDate(String email, LocalDate date) {
-<span class="nc" id="L215">        Doctor doctor = getDoctorByEmail(email);</span>
-<span class="nc" id="L216">        return appointmentRepo.findByDoctorIdAndAppointmentDateOrderByAppointmentTime(doctor.getId(), date);</span>
+<span class="fc" id="L215">        Doctor doctor = getDoctorByEmail(email);</span>
+<span class="fc" id="L216">        return appointmentRepo.findByDoctorIdAndAppointmentDateOrderByAppointmentTime(doctor.getId(), date);</span>
     }
 
     /** Doctor: appointments for the current week (Mon–Sun) */
     public List&lt;Appointment&gt; getDoctorWeekAppointments(String email, LocalDate weekStart) {
-<span class="nc" id="L221">        Doctor doctor = getDoctorByEmail(email);</span>
-<span class="nc" id="L222">        return appointmentRepo.findByDoctorIdAndAppointmentDateBetweenOrderByAppointmentDateAscAppointmentTimeAsc(</span>
-<span class="nc" id="L223">                doctor.getId(), weekStart, weekStart.plusDays(6));</span>
+<span class="fc" id="L221">        Doctor doctor = getDoctorByEmail(email);</span>
+<span class="fc" id="L222">        return appointmentRepo.findByDoctorIdAndAppointmentDateBetweenOrderByAppointmentDateAscAppointmentTimeAsc(</span>
+<span class="fc" id="L223">                doctor.getId(), weekStart, weekStart.plusDays(6));</span>
     }
 
     private Doctor getDoctorByEmail(String email) {
-<span class="nc" id="L227">        User user = userRepo.findByEmail(email).orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, email));</span>
-<span class="nc" id="L228">        return doctorRepo.findByUserId(user.getId())</span>
-<span class="nc" id="L229">                .orElseThrow(() -&gt; new NotFoundException(&quot;Doctor profile not found&quot;));</span>
+<span class="pc" id="L227">        User user = userRepo.findByEmail(email).orElseThrow(() -&gt; new NotFoundException(&quot;User&quot;, email));</span>
+<span class="fc" id="L228">        return doctorRepo.findByUserId(user.getId())</span>
+<span class="pc" id="L229">                .orElseThrow(() -&gt; new NotFoundException(&quot;Doctor profile not found&quot;));</span>
     }
 
     private boolean isSlotTaken(Long doctorId, LocalDate date, LocalTime time) {
@@ -235,8 +235,8 @@ public class AppointmentService {
     }
 
     private void validatePatientOwnership(Appointment appt, String email) {
-<span class="pc bpc" id="L238" title="1 of 2 branches missed.">        if (!appt.getPatient().getEmail().equals(email))</span>
-<span class="nc" id="L239">            throw new AppException(&quot;You do not have permission to modify this appointment.&quot;);</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">        if (!appt.getPatient().getEmail().equals(email))</span>
+<span class="fc" id="L239">            throw new AppException(&quot;You do not have permission to modify this appointment.&quot;);</span>
 <span class="fc" id="L240">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
