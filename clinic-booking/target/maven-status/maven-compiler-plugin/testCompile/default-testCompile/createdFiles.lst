@@ -9,11 +9,11 @@ com\clinic\performance\PatientAppointmentBookingPerformanceTest$ResourceMonitor.
 com\clinic\model\ModelTest.class
 com\clinic\controller\DoctorControllerTest.class
 com\clinic\config\DataInitializerTest.class
+com\clinic\dto\DtoTest.class
 com\clinic\service\AppointmentServiceTest.class
 com\clinic\controller\PatientControllerTest.class
 com\clinic\service\UserServiceTest.class
 com\clinic\service\AppointmentServiceAdditionalTest.class
-com\clinic\dto\DtosTest.class
 com\clinic\model\ModelCoverageTest.class
 com\clinic\performance\PatientAppointmentBookingPerformanceTest.class
 com\clinic\exception\GlobalExceptionHandlerTest.class

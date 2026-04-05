@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DtosTest {
+class DtoTest {
 
     // ── RegisterRequest ───────────────────────────────────────────────────────
 
@@ -26,24 +26,61 @@ class DtosTest {
     }
 
     @Test
-    void registerRequest_equalsAndHashCode() {
+    void registerRequest_equalObjects() {
         Dtos.RegisterRequest r1 = new Dtos.RegisterRequest();
-        r1.setFullName("Alice");
-        r1.setEmail("alice@clinic.com");
+        r1.setFullName("Alice"); r1.setEmail("a@b.com");
+        r1.setPassword("pw123"); r1.setPhone("111");
 
         Dtos.RegisterRequest r2 = new Dtos.RegisterRequest();
-        r2.setFullName("Alice");
-        r2.setEmail("alice@clinic.com");
+        r2.setFullName("Alice"); r2.setEmail("a@b.com");
+        r2.setPassword("pw123"); r2.setPhone("111");
 
         assertEquals(r1, r2);
         assertEquals(r1.hashCode(), r2.hashCode());
     }
 
     @Test
-    void registerRequest_toString_containsFields() {
-        Dtos.RegisterRequest req = new Dtos.RegisterRequest();
-        req.setFullName("Bob");
-        assertTrue(req.toString().contains("Bob"));
+    void registerRequest_sameInstance_isEqual() {
+        Dtos.RegisterRequest r = new Dtos.RegisterRequest();
+        r.setFullName("Alice");
+        assertEquals(r, r);
+    }
+
+    @Test
+    void registerRequest_notEqualToNull() {
+        Dtos.RegisterRequest r = new Dtos.RegisterRequest();
+        assertNotEquals(null, r);
+    }
+
+    @Test
+    void registerRequest_notEqualToDifferentType() {
+        Dtos.RegisterRequest r = new Dtos.RegisterRequest();
+        assertNotEquals("string", r);
+    }
+
+    @Test
+    void registerRequest_notEqualWhenFieldDiffers() {
+        Dtos.RegisterRequest r1 = new Dtos.RegisterRequest();
+        r1.setFullName("Alice");
+
+        Dtos.RegisterRequest r2 = new Dtos.RegisterRequest();
+        r2.setFullName("Bob");
+
+        assertNotEquals(r1, r2);
+    }
+
+    @Test
+    void registerRequest_nullFields_equalIfBothNull() {
+        Dtos.RegisterRequest r1 = new Dtos.RegisterRequest();
+        Dtos.RegisterRequest r2 = new Dtos.RegisterRequest();
+        assertEquals(r1, r2);
+    }
+
+    @Test
+    void registerRequest_toString_containsName() {
+        Dtos.RegisterRequest r = new Dtos.RegisterRequest();
+        r.setFullName("Bob");
+        assertTrue(r.toString().contains("Bob"));
     }
 
     // ── LoginRequest ──────────────────────────────────────────────────────────
@@ -59,17 +96,42 @@ class DtosTest {
     }
 
     @Test
-    void loginRequest_equalsAndHashCode() {
+    void loginRequest_equalObjects() {
         Dtos.LoginRequest a = new Dtos.LoginRequest();
-        a.setEmail("a@b.com");
-        a.setPassword("pw");
+        a.setEmail("a@b.com"); a.setPassword("pw");
 
         Dtos.LoginRequest b = new Dtos.LoginRequest();
-        b.setEmail("a@b.com");
-        b.setPassword("pw");
+        b.setEmail("a@b.com"); b.setPassword("pw");
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void loginRequest_sameInstance_isEqual() {
+        Dtos.LoginRequest r = new Dtos.LoginRequest();
+        assertEquals(r, r);
+    }
+
+    @Test
+    void loginRequest_notEqualToNull() {
+        assertNotEquals(null, new Dtos.LoginRequest());
+    }
+
+    @Test
+    void loginRequest_notEqualToDifferentType() {
+        assertNotEquals("x", new Dtos.LoginRequest());
+    }
+
+    @Test
+    void loginRequest_notEqualWhenEmailDiffers() {
+        Dtos.LoginRequest a = new Dtos.LoginRequest();
+        a.setEmail("a@b.com");
+
+        Dtos.LoginRequest b = new Dtos.LoginRequest();
+        b.setEmail("c@d.com");
+
+        assertNotEquals(a, b);
     }
 
     // ── AuthResponse ──────────────────────────────────────────────────────────
@@ -77,7 +139,6 @@ class DtosTest {
     @Test
     void authResponse_of_setsAllFields() {
         Dtos.AuthResponse res = Dtos.AuthResponse.of("tok123", "ROLE_PATIENT", "Alice");
-
         assertEquals("tok123", res.getToken());
         assertEquals("ROLE_PATIENT", res.getRole());
         assertEquals("Alice", res.getName());
@@ -96,12 +157,48 @@ class DtosTest {
     }
 
     @Test
-    void authResponse_equalsAndHashCode() {
+    void authResponse_equalObjects() {
         Dtos.AuthResponse a = Dtos.AuthResponse.of("t", "r", "n");
         Dtos.AuthResponse b = Dtos.AuthResponse.of("t", "r", "n");
-
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void authResponse_sameInstance_isEqual() {
+        Dtos.AuthResponse r = Dtos.AuthResponse.of("t", "r", "n");
+        assertEquals(r, r);
+    }
+
+    @Test
+    void authResponse_notEqualToNull() {
+        assertNotEquals(null, Dtos.AuthResponse.of("t", "r", "n"));
+    }
+
+    @Test
+    void authResponse_notEqualToDifferentType() {
+        assertNotEquals("x", Dtos.AuthResponse.of("t", "r", "n"));
+    }
+
+    @Test
+    void authResponse_notEqualWhenTokenDiffers() {
+        Dtos.AuthResponse a = Dtos.AuthResponse.of("t1", "r", "n");
+        Dtos.AuthResponse b = Dtos.AuthResponse.of("t2", "r", "n");
+        assertNotEquals(a, b);
+    }
+
+    @Test
+    void authResponse_notEqualWhenRoleDiffers() {
+        Dtos.AuthResponse a = Dtos.AuthResponse.of("t", "PATIENT", "n");
+        Dtos.AuthResponse b = Dtos.AuthResponse.of("t", "DOCTOR", "n");
+        assertNotEquals(a, b);
+    }
+
+    @Test
+    void authResponse_notEqualWhenNameDiffers() {
+        Dtos.AuthResponse a = Dtos.AuthResponse.of("t", "r", "Alice");
+        Dtos.AuthResponse b = Dtos.AuthResponse.of("t", "r", "Bob");
+        assertNotEquals(a, b);
     }
 
     // ── AppointmentRequest ────────────────────────────────────────────────────
@@ -122,17 +219,53 @@ class DtosTest {
     }
 
     @Test
-    void appointmentRequest_equalsAndHashCode() {
+    void appointmentRequest_equalObjects() {
         Dtos.AppointmentRequest a = new Dtos.AppointmentRequest();
-        a.setDoctorId(1L);
-        a.setAppointmentTime("09:00");
+        a.setDoctorId(1L); a.setAppointmentTime("09:00");
 
         Dtos.AppointmentRequest b = new Dtos.AppointmentRequest();
-        b.setDoctorId(1L);
-        b.setAppointmentTime("09:00");
+        b.setDoctorId(1L); b.setAppointmentTime("09:00");
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void appointmentRequest_sameInstance_isEqual() {
+        Dtos.AppointmentRequest r = new Dtos.AppointmentRequest();
+        assertEquals(r, r);
+    }
+
+    @Test
+    void appointmentRequest_notEqualToNull() {
+        assertNotEquals(null, new Dtos.AppointmentRequest());
+    }
+
+    @Test
+    void appointmentRequest_notEqualToDifferentType() {
+        assertNotEquals("x", new Dtos.AppointmentRequest());
+    }
+
+    @Test
+    void appointmentRequest_notEqualWhenDoctorIdDiffers() {
+        Dtos.AppointmentRequest a = new Dtos.AppointmentRequest();
+        a.setDoctorId(1L);
+
+        Dtos.AppointmentRequest b = new Dtos.AppointmentRequest();
+        b.setDoctorId(2L);
+
+        assertNotEquals(a, b);
+    }
+
+    @Test
+    void appointmentRequest_notEqualWhenTimeDiffers() {
+        Dtos.AppointmentRequest a = new Dtos.AppointmentRequest();
+        a.setAppointmentTime("09:00");
+
+        Dtos.AppointmentRequest b = new Dtos.AppointmentRequest();
+        b.setAppointmentTime("10:00");
+
+        assertNotEquals(a, b);
     }
 
     // ── ConsultationRequest ───────────────────────────────────────────────────
@@ -141,12 +274,11 @@ class DtosTest {
     void consultationRequest_gettersAndSetters() {
         Dtos.ConsultationRequest req = new Dtos.ConsultationRequest();
         req.setConsultationNotes("Patient is recovering well.");
-
         assertEquals("Patient is recovering well.", req.getConsultationNotes());
     }
 
     @Test
-    void consultationRequest_equalsAndHashCode() {
+    void consultationRequest_equalObjects() {
         Dtos.ConsultationRequest a = new Dtos.ConsultationRequest();
         a.setConsultationNotes("notes");
 
@@ -155,6 +287,33 @@ class DtosTest {
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void consultationRequest_sameInstance_isEqual() {
+        Dtos.ConsultationRequest r = new Dtos.ConsultationRequest();
+        assertEquals(r, r);
+    }
+
+    @Test
+    void consultationRequest_notEqualToNull() {
+        assertNotEquals(null, new Dtos.ConsultationRequest());
+    }
+
+    @Test
+    void consultationRequest_notEqualToDifferentType() {
+        assertNotEquals("x", new Dtos.ConsultationRequest());
+    }
+
+    @Test
+    void consultationRequest_notEqualWhenNotesDiffer() {
+        Dtos.ConsultationRequest a = new Dtos.ConsultationRequest();
+        a.setConsultationNotes("note A");
+
+        Dtos.ConsultationRequest b = new Dtos.ConsultationRequest();
+        b.setConsultationNotes("note B");
+
+        assertNotEquals(a, b);
     }
 
     // ── DoctorRequest ─────────────────────────────────────────────────────────
@@ -177,6 +336,45 @@ class DtosTest {
         assertEquals(Specialization.CARDIOLOGY, req.getSpecialization());
         assertEquals("Experienced cardiologist.", req.getBio());
         assertEquals(800, req.getConsultationFee());
+    }
+
+    @Test
+    void doctorRequest_equalObjects() {
+        Dtos.DoctorRequest a = new Dtos.DoctorRequest();
+        a.setEmail("dr@clinic.com"); a.setSpecialization(Specialization.CARDIOLOGY);
+
+        Dtos.DoctorRequest b = new Dtos.DoctorRequest();
+        b.setEmail("dr@clinic.com"); b.setSpecialization(Specialization.CARDIOLOGY);
+
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void doctorRequest_sameInstance_isEqual() {
+        Dtos.DoctorRequest r = new Dtos.DoctorRequest();
+        assertEquals(r, r);
+    }
+
+    @Test
+    void doctorRequest_notEqualToNull() {
+        assertNotEquals(null, new Dtos.DoctorRequest());
+    }
+
+    @Test
+    void doctorRequest_notEqualToDifferentType() {
+        assertNotEquals("x", new Dtos.DoctorRequest());
+    }
+
+    @Test
+    void doctorRequest_notEqualWhenSpecializationDiffers() {
+        Dtos.DoctorRequest a = new Dtos.DoctorRequest();
+        a.setSpecialization(Specialization.CARDIOLOGY);
+
+        Dtos.DoctorRequest b = new Dtos.DoctorRequest();
+        b.setSpecialization(Specialization.NEUROLOGY);
+
+        assertNotEquals(a, b);
     }
 
     @Test
@@ -204,8 +402,46 @@ class DtosTest {
 
     @Test
     void scheduleRequest_defaultSlotDuration_is30() {
-        Dtos.ScheduleRequest req = new Dtos.ScheduleRequest();
-        assertEquals(30, req.getSlotDurationMinutes());
+        assertEquals(30, new Dtos.ScheduleRequest().getSlotDurationMinutes());
+    }
+
+    @Test
+    void scheduleRequest_equalObjects() {
+        Dtos.ScheduleRequest a = new Dtos.ScheduleRequest();
+        a.setDayOfWeek("MONDAY"); a.setStartTime("09:00"); a.setEndTime("17:00");
+
+        Dtos.ScheduleRequest b = new Dtos.ScheduleRequest();
+        b.setDayOfWeek("MONDAY"); b.setStartTime("09:00"); b.setEndTime("17:00");
+
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void scheduleRequest_sameInstance_isEqual() {
+        Dtos.ScheduleRequest r = new Dtos.ScheduleRequest();
+        assertEquals(r, r);
+    }
+
+    @Test
+    void scheduleRequest_notEqualToNull() {
+        assertNotEquals(null, new Dtos.ScheduleRequest());
+    }
+
+    @Test
+    void scheduleRequest_notEqualToDifferentType() {
+        assertNotEquals("x", new Dtos.ScheduleRequest());
+    }
+
+    @Test
+    void scheduleRequest_notEqualWhenDayDiffers() {
+        Dtos.ScheduleRequest a = new Dtos.ScheduleRequest();
+        a.setDayOfWeek("MONDAY");
+
+        Dtos.ScheduleRequest b = new Dtos.ScheduleRequest();
+        b.setDayOfWeek("FRIDAY");
+
+        assertNotEquals(a, b);
     }
 
     // ── AdminPatientRow ───────────────────────────────────────────────────────
@@ -213,8 +449,8 @@ class DtosTest {
     @Test
     void adminPatientRow_of_setsAllFields() {
         LocalDate date = LocalDate.of(2024, 1, 10);
-        Dtos.AdminPatientRow row = Dtos.AdminPatientRow.of(1L, "Alice", "alice@clinic.com",
-                date, true, 5L, "Dr. Smith");
+        Dtos.AdminPatientRow row = Dtos.AdminPatientRow.of(
+                1L, "Alice", "alice@clinic.com", date, true, 5L, "Dr. Smith");
 
         assertEquals(1L, row.getId());
         assertEquals("Alice", row.getFullName());
@@ -226,9 +462,9 @@ class DtosTest {
     }
 
     @Test
-    void adminPatientRow_of_disabledPatient() {
-        Dtos.AdminPatientRow row = Dtos.AdminPatientRow.of(2L, "Bob", "bob@clinic.com",
-                LocalDate.now(), false, 0L, "");
+    void adminPatientRow_disabledPatient() {
+        Dtos.AdminPatientRow row = Dtos.AdminPatientRow.of(
+                2L, "Bob", "bob@clinic.com", LocalDate.now(), false, 0L, "");
         assertFalse(row.isEnabled());
         assertEquals(0L, row.getAppointmentCount());
     }
@@ -243,6 +479,42 @@ class DtosTest {
         assertEquals(99L, row.getId());
         assertEquals("Charlie", row.getFullName());
         assertTrue(row.isEnabled());
+    }
+
+    @Test
+    void adminPatientRow_equalObjects() {
+        LocalDate date = LocalDate.of(2024, 3, 1);
+        Dtos.AdminPatientRow a = Dtos.AdminPatientRow.of(1L, "A", "a@b.com", date, true, 2L, "Dr X");
+        Dtos.AdminPatientRow b = Dtos.AdminPatientRow.of(1L, "A", "a@b.com", date, true, 2L, "Dr X");
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void adminPatientRow_sameInstance_isEqual() {
+        Dtos.AdminPatientRow r = new Dtos.AdminPatientRow();
+        assertEquals(r, r);
+    }
+
+    @Test
+    void adminPatientRow_notEqualToNull() {
+        assertNotEquals(null, new Dtos.AdminPatientRow());
+    }
+
+    @Test
+    void adminPatientRow_notEqualToDifferentType() {
+        assertNotEquals("x", new Dtos.AdminPatientRow());
+    }
+
+    @Test
+    void adminPatientRow_notEqualWhenNameDiffers() {
+        Dtos.AdminPatientRow a = new Dtos.AdminPatientRow();
+        a.setFullName("Alice");
+
+        Dtos.AdminPatientRow b = new Dtos.AdminPatientRow();
+        b.setFullName("Bob");
+
+        assertNotEquals(a, b);
     }
 
     // ── AdminDashboardPatientStats ────────────────────────────────────────────
@@ -272,6 +544,45 @@ class DtosTest {
         assertEquals(0, stats.getNoShowPatients());
     }
 
+    @Test
+    void adminDashboardPatientStats_equalObjects() {
+        Dtos.AdminDashboardPatientStats a = new Dtos.AdminDashboardPatientStats();
+        a.setTotalPatients(10); a.setActivePatients(8);
+
+        Dtos.AdminDashboardPatientStats b = new Dtos.AdminDashboardPatientStats();
+        b.setTotalPatients(10); b.setActivePatients(8);
+
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void adminDashboardPatientStats_sameInstance_isEqual() {
+        Dtos.AdminDashboardPatientStats s = new Dtos.AdminDashboardPatientStats();
+        assertEquals(s, s);
+    }
+
+    @Test
+    void adminDashboardPatientStats_notEqualToNull() {
+        assertNotEquals(null, new Dtos.AdminDashboardPatientStats());
+    }
+
+    @Test
+    void adminDashboardPatientStats_notEqualToDifferentType() {
+        assertNotEquals("x", new Dtos.AdminDashboardPatientStats());
+    }
+
+    @Test
+    void adminDashboardPatientStats_notEqualWhenTotalDiffers() {
+        Dtos.AdminDashboardPatientStats a = new Dtos.AdminDashboardPatientStats();
+        a.setTotalPatients(5);
+
+        Dtos.AdminDashboardPatientStats b = new Dtos.AdminDashboardPatientStats();
+        b.setTotalPatients(10);
+
+        assertNotEquals(a, b);
+    }
+
     // ── LeaveRequest ──────────────────────────────────────────────────────────
 
     @Test
@@ -294,18 +605,54 @@ class DtosTest {
     }
 
     @Test
-    void leaveRequest_equalsAndHashCode() {
+    void leaveRequest_equalObjects() {
         LocalDate date = LocalDate.of(2025, 8, 1);
 
         Dtos.LeaveRequest a = new Dtos.LeaveRequest();
-        a.setLeaveDate(date);
-        a.setReason("Sick");
+        a.setLeaveDate(date); a.setReason("Sick");
 
         Dtos.LeaveRequest b = new Dtos.LeaveRequest();
-        b.setLeaveDate(date);
-        b.setReason("Sick");
+        b.setLeaveDate(date); b.setReason("Sick");
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    void leaveRequest_sameInstance_isEqual() {
+        Dtos.LeaveRequest r = new Dtos.LeaveRequest();
+        assertEquals(r, r);
+    }
+
+    @Test
+    void leaveRequest_notEqualToNull() {
+        assertNotEquals(null, new Dtos.LeaveRequest());
+    }
+
+    @Test
+    void leaveRequest_notEqualToDifferentType() {
+        assertNotEquals("x", new Dtos.LeaveRequest());
+    }
+
+    @Test
+    void leaveRequest_notEqualWhenDateDiffers() {
+        Dtos.LeaveRequest a = new Dtos.LeaveRequest();
+        a.setLeaveDate(LocalDate.of(2025, 1, 1));
+
+        Dtos.LeaveRequest b = new Dtos.LeaveRequest();
+        b.setLeaveDate(LocalDate.of(2025, 2, 1));
+
+        assertNotEquals(a, b);
+    }
+
+    @Test
+    void leaveRequest_notEqualWhenOneReasonIsNull() {
+        Dtos.LeaveRequest a = new Dtos.LeaveRequest();
+        a.setReason("Sick");
+
+        Dtos.LeaveRequest b = new Dtos.LeaveRequest();
+        b.setReason(null);
+
+        assertNotEquals(a, b);
     }
 }
