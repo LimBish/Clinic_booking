@@ -326,4 +326,21 @@ class ModelTest {
         schedule.setDayOfWeek(DayOfWeek.WEDNESDAY);
         assertTrue(schedule.toString().contains("WEDNESDAY"));
     }
+
+    @Test
+    void user_notEqualToNull() {
+        User u = new User();
+        assertNotEquals(null, u);
+    }
+
+    @Test
+    void user_notEqualToDifferentType() {
+        User u = new User();
+        assertNotEquals("string", u);
+    }
+
+    @Test
+    void doctor_notEqualToNull() {
+        assertNotEquals(null, new Doctor());
+    }
 }

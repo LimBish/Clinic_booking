@@ -23,7 +23,7 @@ Clinic Appointment Booking System,com.clinic.dto,Dtos.AuthResponse,35,136,18,12,
 Clinic Appointment Booking System,com.clinic.dto,Dtos.ConsultationRequest,17,58,8,6,0,2,8,6,1,6
 Clinic Appointment Booking System,com.clinic.exception,GlobalExceptionHandler.ErrorResponse,0,6,0,0,0,1,0,1,0,1
 Clinic Appointment Booking System,com.clinic.exception,NotFoundException,0,11,0,0,0,4,0,2,0,2
-Clinic Appointment Booking System,com.clinic.exception,GlobalExceptionHandler,68,138,11,7,11,25,10,9,2,8
+Clinic Appointment Booking System,com.clinic.exception,GlobalExceptionHandler,0,206,1,17,0,36,1,18,0,10
 Clinic Appointment Booking System,com.clinic.exception,AppException,0,4,0,0,0,2,0,1,0,1
 Clinic Appointment Booking System,com.clinic.config,DataInitializer,0,30,0,2,0,5,0,3,0,2
 Clinic Appointment Booking System,com.clinic.config,SecurityConfig,54,167,14,0,13,21,8,11,1,11

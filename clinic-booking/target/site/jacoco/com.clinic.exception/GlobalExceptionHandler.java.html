@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
     @ExceptionHandler(AppException.class)
     public Object handle(AppException ex, HttpServletRequest req) {
 <span class="fc" id="L25">        log.warn(&quot;Business error [{}]: {}&quot;, req.getRequestURI(), ex.getMessage());</span>
-<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        return isApi(req)</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        return isApi(req)</span>
 <span class="fc" id="L27">                ? ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()))</span>
-<span class="nc" id="L28">                : errorView(400, ex.getMessage());</span>
+<span class="fc" id="L28">                : errorView(400, ex.getMessage());</span>
     }
 
     // ── Not found (404) ───────────────────────────────────────────────────────
@@ -33,8 +33,8 @@ import java.util.stream.Collectors;
     @ExceptionHandler(NotFoundException.class)
     public Object handle(NotFoundException ex, HttpServletRequest req) {
 <span class="fc" id="L35">        log.warn(&quot;Not found [{}]: {}&quot;, req.getRequestURI(), ex.getMessage());</span>
-<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        return isApi(req)</span>
-<span class="nc" id="L37">                ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()))</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        return isApi(req)</span>
+<span class="fc" id="L37">                ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()))</span>
 <span class="fc" id="L38">                : errorView(404, ex.getMessage());</span>
     }
 
@@ -46,26 +46,26 @@ import java.util.stream.Collectors;
 <span class="fc" id="L46">                .map(FieldError::getDefaultMessage)</span>
 <span class="fc" id="L47">                .collect(Collectors.joining(&quot;, &quot;));</span>
 <span class="fc" id="L48">        log.warn(&quot;Validation [{}]: {}&quot;, req.getRequestURI(), msg);</span>
-<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        return isApi(req)</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        return isApi(req)</span>
 <span class="fc" id="L50">                ? ResponseEntity.badRequest().body(new ErrorResponse(msg))</span>
-<span class="nc" id="L51">                : errorView(400, msg);</span>
+<span class="fc" id="L51">                : errorView(400, msg);</span>
     }
 
     // ── Auth (401 / 403) ──────────────────────────────────────────────────────
 
     @ExceptionHandler(BadCredentialsException.class)
     public Object handle(BadCredentialsException ex, HttpServletRequest req) {
-<span class="nc bnc" id="L58" title="All 2 branches missed.">        return isApi(req)</span>
-<span class="nc" id="L59">                ? ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(&quot;Invalid email or password&quot;))</span>
-<span class="nc" id="L60">                : errorView(401, &quot;Invalid email or password&quot;);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        return isApi(req)</span>
+<span class="fc" id="L59">                ? ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(&quot;Invalid email or password&quot;))</span>
+<span class="fc" id="L60">                : errorView(401, &quot;Invalid email or password&quot;);</span>
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public Object handle(AccessDeniedException ex, HttpServletRequest req) {
-<span class="nc" id="L65">        log.warn(&quot;Access denied [{}]&quot;, req.getRequestURI());</span>
-<span class="nc bnc" id="L66" title="All 2 branches missed.">        return isApi(req)</span>
-<span class="nc" id="L67">                ? ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(&quot;Access denied&quot;))</span>
-<span class="nc" id="L68">                : errorView(403, &quot;You don't have permission to access this page.&quot;);</span>
+<span class="fc" id="L65">        log.warn(&quot;Access denied [{}]&quot;, req.getRequestURI());</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        return isApi(req)</span>
+<span class="fc" id="L67">                ? ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(&quot;Access denied&quot;))</span>
+<span class="fc" id="L68">                : errorView(403, &quot;You don't have permission to access this page.&quot;);</span>
     }
 
     // ── Catch-all (500) ───────────────────────────────────────────────────────
@@ -73,8 +73,8 @@ import java.util.stream.Collectors;
     @ExceptionHandler(Exception.class)
     public Object handle(Exception ex, HttpServletRequest req) {
 <span class="fc" id="L75">        log.error(&quot;Unexpected error [{}]: {}&quot;, req.getRequestURI(), ex.getMessage(), ex);</span>
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        return isApi(req)</span>
-<span class="nc" id="L77">                ? ResponseEntity.internalServerError().body(new ErrorResponse(&quot;Something went wrong. Please try again.&quot;))</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        return isApi(req)</span>
+<span class="fc" id="L77">                ? ResponseEntity.internalServerError().body(new ErrorResponse(&quot;Something went wrong. Please try again.&quot;))</span>
 <span class="fc" id="L78">                : errorView(500, &quot;Something went wrong. Please try again.&quot;);</span>
     }
 
@@ -82,8 +82,8 @@ import java.util.stream.Collectors;
 
     private boolean isApi(HttpServletRequest req) {
 <span class="fc" id="L84">        String accept = req.getHeader(&quot;Accept&quot;);</span>
-<span class="pc bpc" id="L85" title="1 of 4 branches missed.">        return req.getRequestURI().startsWith(&quot;/api/&quot;) ||</span>
-<span class="pc bnc" id="L86" title="All 2 branches missed.">               (accept != null &amp;&amp; accept.contains(&quot;application/json&quot;));</span>
+<span class="fc bfc" id="L85" title="All 4 branches covered.">        return req.getRequestURI().startsWith(&quot;/api/&quot;) ||</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">               (accept != null &amp;&amp; accept.contains(&quot;application/json&quot;));</span>
     }
 
     private ModelAndView errorView(int status, String message) {
