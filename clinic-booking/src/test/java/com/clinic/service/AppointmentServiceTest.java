@@ -72,19 +72,6 @@ class AppointmentServiceTest {
         verify(doctorRepo, never()).findById(any());
     }
 
-//    @Test
-//    void book_whenPatientNotFound_throwsNotFoundException() {
-//        when(userRepo.findByEmail("patient@example.com")).thenReturn(Optional.empty());
-//
-//        NotFoundException ex = assertThrows(NotFoundException.class,
-//                () -> appointmentService.book("patient@example.com", request));
-//
-//        // Intentional failure for Jenkins deployment-gate evidence
-//        assertEquals("Intentional wrong message for pipeline failure demo", ex.getMessage());
-//        verify(doctorRepo, never()).findById(any());
-//    }
-
-
     @Test
     void book_whenDoctorNotFound_throwsNotFoundException() {
         User patient = buildPatient("patient@example.com");
