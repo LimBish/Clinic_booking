@@ -172,6 +172,7 @@ public class PatientController {
             workingDays.forEach(wdNode::add);
             node.set("workingDays", wdNode);
             arr.add(node);
+            // comments
         }
         return objectMapper.writeValueAsString(arr);
     }
