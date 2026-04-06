@@ -61,6 +61,17 @@ class AppointmentServiceTest {
         request.setReason("General checkup");
     }
 
+//    @Test
+//    void book_whenPatientNotFound_throwsNotFoundException() {
+//        when(userRepo.findByEmail("patient@example.com")).thenReturn(Optional.empty());
+//
+//        NotFoundException ex = assertThrows(NotFoundException.class,
+//                () -> appointmentService.book("patient@example.com", request));
+//
+//        assertEquals("User not found with id: patient@example.com", ex.getMessage());
+//        verify(doctorRepo, never()).findById(any());
+//    }
+
     @Test
     void book_whenPatientNotFound_throwsNotFoundException() {
         when(userRepo.findByEmail("patient@example.com")).thenReturn(Optional.empty());
@@ -68,9 +79,11 @@ class AppointmentServiceTest {
         NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> appointmentService.book("patient@example.com", request));
 
-        assertEquals("User not found with id: patient@example.com", ex.getMessage());
+        // Intentional failure for Jenkins deployment-gate evidence
+        assertEquals("Intentional wrong message for pipeline failure demo", ex.getMessage());
         verify(doctorRepo, never()).findById(any());
     }
+
 
     @Test
     void book_whenDoctorNotFound_throwsNotFoundException() {
